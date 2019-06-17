@@ -45,6 +45,7 @@ var contextMenuActions = function contextMenuActions(props) {
   var addEntities = props.entityTypeNames.map(function (entityTypeName) {
     return {
       action: function action() {
+    	window.app.showDialog(window.app.creatParagraph())
         return props.addLinkedEntity({
           entity: props.defaultEntity({ entityType: entityTypeName }),
           id: props.model.id

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import CustomDiagram from './CustomDiagram';
 import Editor from './Views/Editor'
 import Reader from './Views/Reader'
+import Dialog from './Views/Dialog'
 import Tab from './Components/Tab'
 import $ from 'jquery';
 var beforeNavigatedAway = function () {
@@ -51,10 +52,19 @@ class App extends Component {
 	  window.app = this
   }
   refresh() {
-	  this.setState({refresh:this.refresh!==true?true:false})
+	  this.setState({refresh:this.state.refresh!==true?true:false})
+  }
+  showDialog(content) {
+	  this.setState({DialogContent:content})
   }
   switchView(v, node) {
 	  this.setState({topView:v})
+  }
+  
+  creatParagraph() {
+	  return <div>
+	  	PPPP
+	  </div>
   }
   
   render() {
@@ -89,7 +99,9 @@ class App extends Component {
 	  
     return (
       <div className="App">
-        
+      	{ 
+      		this.state.DialogContent && <Dialog >{this.state.DialogContent}</Dialog>
+      	}      	
         {
         	this.state.topView!=="Editor" && 
         	<header className="App-header">

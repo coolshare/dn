@@ -10,7 +10,7 @@ var defaultEntity = function defaultEntity(state) {
       y: state.canvas.cursor.y - state.config.entityTypes[entityType].height / 2,
       width: state.config.entityTypes[entityType].width,
       height: state.config.entityTypes[entityType].height,
-      name: 'test',
+      name: 'test'+new Date().valueOf(),
       isAnchored: true,
       isSelected: false,
       anchor: {
