@@ -5,8 +5,16 @@ import Reader from './Views/Reader'
 import Dialog from './Views/Dialog'
 import Tab from './Components/Tab'
 import $ from 'jquery';
+
+import { library } from '@fortawesome/fontawesome-svg-core';
+
+import {faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
+	faDownload, faSignal, faArrowUp, faSync, faCaretDown, faWindowClose, faTimes } from '@fortawesome/free-solid-svg-icons';
+library.add(faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
+	faDownload, faSignal, faArrowUp,  faSync, faCaretDown, faWindowClose, faTimes);
+
 var beforeNavigatedAway = function () {
-	saveStory()
+	//saveStory()
 };
 
 window.addEventListener('beforeunload', beforeNavigatedAway, false);
@@ -25,6 +33,16 @@ function saveStory(storyId) {
 }
 
 
+function resetStory(storyId) {
+	window.curState = [{"id":"_start_","type":"StartPoint","width":40,"height":40,"x":95,"y":94,"name":"Home"}]
+	var data = {
+			fileName:storyId+".txt",
+			filePath:"./temp/Stories/",
+			fileContent:JSON.stringify(window.curState)
+	}
+	post( "http://73.71.159.185:12345", data);
+	window.location.reload()
+}
 
 function post(url, data){
 	let self = this;
@@ -54,8 +72,12 @@ class App extends Component {
   refresh() {
 	  this.setState({refresh:this.state.refresh!==true?true:false})
   }
-  showDialog(content) {
-	  this.setState({DialogContent:content})
+  showDialog(content, title) {
+	  var d = undefined
+	  if (content!==undefined) {
+		  d = Object.assign({}, {content:content, title:title})
+	  }
+	  this.setState({Dialog:d})
   }
   switchView(v, node) {
 	  this.setState({topView:v})
@@ -100,13 +122,13 @@ class App extends Component {
     return (
       <div className="App">
       	{ 
-      		this.state.DialogContent && <Dialog >{this.state.DialogContent}</Dialog>
+      		this.state.Dialog && <Dialog title={this.state.Dialog.title}>{this.state.Dialog.content}</Dialog>
       	}      	
         {
         	this.state.topView!=="Editor" && 
         	<header className="App-header">
           		<h3 className="App-title">Welcome to Store Builder</h3>
-          		<div><button onClick={e=>{saveStory("StoryA")}}>Save</button></div>
+          		<div><button onClick={e=>{saveStory("StoryA")}}>Save</button><button onClick={e=>{resetStory("StoryA")}}>Reset</button></div>
           	</header>
         }
         {
