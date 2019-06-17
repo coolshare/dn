@@ -1,0 +1,89 @@
+{
+  "_from": "react-flow-diagram@^2.10.0",
+  "_id": "react-flow-diagram@2.13.0",
+  "_inBundle": false,
+  "_integrity": "sha512-H+A+guFJCQmwSRcNj9K9OqbYaxBMKI9DtVaOYSqQDuOEQqT3HsWNmLPFrk2Ny8vuxoAuUl/RsDGD0rRDTh4pfQ==",
+  "_location": "/react-flow-diagram",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "react-flow-diagram@^2.10.0",
+    "name": "react-flow-diagram",
+    "escapedName": "react-flow-diagram",
+    "rawSpec": "^2.10.0",
+    "saveSpec": null,
+    "fetchSpec": "^2.10.0"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/react-flow-diagram/-/react-flow-diagram-2.13.0.tgz",
+  "_shasum": "5f184d3077d96eaf68d3635ca008cadf2b478ff8",
+  "_spec": "react-flow-diagram@^2.10.0",
+  "_where": "e:\\work\\2019\\react-flow-diagram-example",
+  "author": {
+    "name": "DrummerHead",
+    "email": "drummerhead@gmail.com"
+  },
+  "bugs": {
+    "url": "https://github.com/DrummerHead/react-flow-diagram/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "react-redux": "^5.0.6",
+    "redux": "^3.7.2",
+    "styled-components": "^2.2.1"
+  },
+  "deprecated": false,
+  "description": "react-flow-diagram React component",
+  "devDependencies": {
+    "babel-eslint": "^8.0.1",
+    "eslint": "^4.3.0",
+    "eslint-config-airbnb": "^15.1.0",
+    "eslint-config-prettier": "^2.6.0",
+    "eslint-plugin-flowtype": "^2.39.1",
+    "eslint-plugin-import": "^2.6.1",
+    "eslint-plugin-jsx-a11y": "5.x",
+    "eslint-plugin-react": "^7.2.1",
+    "flow-bin": "^0.57.3",
+    "flow-typed": "^2.1.5",
+    "nwb": "0.18.x",
+    "prettier": "^1.7.0",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1"
+  },
+  "files": [
+    "css",
+    "es",
+    "lib",
+    "umd"
+  ],
+  "homepage": "https://github.com/DrummerHead/react-flow-diagram#readme",
+  "keywords": [
+    "react-component"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "name": "react-flow-diagram",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DrummerHead/react-flow-diagram.git"
+  },
+  "scripts": {
+    "air": "eslint \"{src,demo/src}/**/*.js\"",
+    "build": "nwb build-react-component",
+    "clean": "nwb clean-module && nwb clean-demo",
+    "eslint-check": "eslint --print-config .eslintrc.js | eslint-config-prettier-check",
+    "flow": "flow",
+    "fti": "flow-typed install",
+    "lintjs": "prettier --single-quote --trailing-comma es5 --write \"{src,demo/src,flow-typed-definition}/**/*.js\"",
+    "preversion": "yarn build",
+    "start": "nwb serve-react-demo",
+    "test": "nwb test-react",
+    "test:coverage": "nwb test-react --coverage",
+    "test:watch": "nwb test-react --server"
+  },
+  "version": "2.13.0"
+}
