@@ -23,10 +23,14 @@ var stopActionPropagation = function stopActionPropagation(action) {
 };
 
 var ContextMenu = function ContextMenu(props) {
+	
   return React.createElement(
     ContextMenuStyle,
     null,
     props.actions.map(function (action) {
+    	if (action.iconVariety==="BranchingLogic" && (window.app.selectedEnity.linksTo===undefined||window.app.selectedEnity.linksTo.length<2)) {
+    	  	  return null
+    	    }
       return React.createElement(
         Action,
         {

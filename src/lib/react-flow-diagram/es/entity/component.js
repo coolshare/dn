@@ -26,6 +26,7 @@ function _taggedTemplateLiteralLoose(strings, raw) { strings.raw = raw; return s
  * ==================================== */
 
 var contextMenuActions = function contextMenuActions(props) {
+  window.app.selectedEnity = window.entityMap[props.model.id]
   var remove = {
     action: function action() {
       return props.removeEntity(props.model.id);
@@ -45,17 +46,38 @@ var contextMenuActions = function contextMenuActions(props) {
   var addEntities = props.entityTypeNames.map(function (entityTypeName) {
     return {
       action: function action() {
-    	window.app.showDialog(window.app.createParagraph(), {title:"Create "+entityTypeName, hideX:true, handleOK:function() {
-    		
-    		var entity = props.defaultEntity({ entityType: entityTypeName })
-    			entity.name = window.app.titleInput.value
-    			entity.content = window.app.contentTextarea.value
-    		var action = props.addLinkedEntity({
-    	          entity: entity,
-    	          id: props.model.id
-    	        });
-    		
-    	}})
+    	if (entityTypeName==="BranchingLogic") {
+    			if (window.app.selectedEnity.linksTo===undefined) {
+    				alert("Branching logic only available for Paragraphs with more than one branches.")
+    				return
+    			}
+    			window.app.showDialog(window.app.createBranchingLogic(), {title:"Create "+entityTypeName, hideX:true, height:"400px", handleOK:function() {
+    				var branchingLogic = {question:window.app.questionInput.value.trim(), selections:[]}
+    				for (var i=0; i<4; i++) {
+    					var item = window.app["selectionInput_"+i].value.trim()
+    					if (item==="") {
+    						continue
+    					}
+    					branchingLogic.selections.push({selection:item, branch:window.app["branchSelect_"+i].value})
+    				}
+    				window.app.selectedEnity.branchingLogic = branchingLogic
+        		
+        	}})
+        	
+    	} else {
+    		window.app.showDialog(window.app.createParagraph(), {title:"Create "+entityTypeName, hideX:true, handleOK:function() {
+        		
+        		var entity = props.defaultEntity({ entityType: entityTypeName })
+        			entity.name = window.app.titleInput.value
+        			entity.content = window.app.contentTextarea.value
+        		var action = props.addLinkedEntity({
+        	          entity: entity,
+        	          id: props.model.id
+        	        });
+        		
+        	}})
+    	}
+    	
         /*return props.addLinkedEntity({
           entity: props.defaultEntity({ entityType: entityTypeName }),
           id: props.model.id

@@ -104,6 +104,28 @@ class App extends Component {
 	  window.app.okButton.disabled = this.titleInput.value.trim()===""
   }
   
+  createBranchingLogic() {
+	  var node = window.app.selectedEnity
+	  var selections = []
+	  var dd = ["A", "B", "C", "D"]
+	  for (let i=0; i<4; i++) {
+		  selections.push(<ul><li>{"Selection "+(dd[i])}</li><span>If select:</span><input style={{marginRight:"10px"}} ref={(node)=>{this["selectionInput_"+i] = node}} /><span style={{marginLeft:"10px"}}>go to</span>
+		  	<select ref={(node)=>{this["branchSelect_"+i] = node}} ><option value="_RANDOM_">Randomly selected one</option>
+		  		{
+		  			node.linksTo.map((link, idx)=>{
+		  				var n = window.entityMap[link.target]
+		  				return <option value={n.id}>{n.name}</option>
+		  			})
+		  		}
+		  		</select>
+		  </ul>)
+	  }
+	  return <div>
+	  	<div><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Question:</div><input style={{marginLeft:"10px", width:"400px"}} ref={(node)=>{this.questionInput = node}}  /></div>
+	  	<div>{selections}</div>
+	  	
+	  </div>
+  }
   createParagraph() {
 	  return <div>
 	  	<div><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input ref={(node)=>{this.titleInput = node}} defaultValue={"Paragraph_"+new Date().valueOf()} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>

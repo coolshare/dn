@@ -4,6 +4,8 @@ import StartPoint from './StartPoint/component';
 import StartIcon from './StartPoint/icon';
 import EndPoint from './EndPoint/component';
 import EndIcon from './EndPoint/icon';
+import BranchingLogic from './BranchingLogic/component';
+import BranchingLogicIcon from './BranchingLogic/icon';
 
 const config = {
   entityTypes: {
@@ -16,6 +18,11 @@ const config = {
       height: 50,
     },
     EndPoint: {
+    	width: 50,
+        height: 50,
+    }
+    ,
+    BranchingLogic: {
     	width: 50,
         height: 50,
     }
@@ -35,6 +42,10 @@ const customEntities = {
   EndPoint: {
 	    component: EndPoint,
 	    icon: EndIcon,
+	  },
+  BranchingLogic: {
+	    component: BranchingLogic,
+	    icon: BranchingLogicIcon,
 	  },
 };
 
