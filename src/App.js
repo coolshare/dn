@@ -22,7 +22,8 @@ window.addEventListener('unload', beforeNavigatedAway, false);
 
 
 
-function saveStory(storyId) {
+window.saveStory = function(storyId) {
+	storyId = storyId||window.curStory
 	var data = {
 			fileName:storyId+".txt",
 			filePath:"./temp/Stories/",
@@ -33,7 +34,7 @@ function saveStory(storyId) {
 }
 
 
-function resetStory(storyId) {
+window.resetStory = function (storyId) {
 	window.curState = [{"id":"_start_","type":"StartPoint","width":40,"height":40,"x":95,"y":94,"name":"Home"}]
 	var data = {
 			fileName:storyId+".txt",
@@ -69,6 +70,22 @@ class App extends Component {
 	  this.state = {topView:"FlowDesign"}
 	  window.app = this
   }
+  findAStory(entityMap) {
+		return this.findNextSection(entityMap, entityMap["_start_"], [])
+	}
+	findNextSection(entityMap, node, path) {
+		path.push(node)
+		if (node.linksTo) {
+			var index = 0
+			if (node.linksTo.length>1) {
+				index = Math.floor(Math.random()*node.linksTo.length)
+			}
+			var n = entityMap[node.linksTo[index].target]
+			path = this.findNextSection(entityMap, n, path)
+	
+		}
+		return path
+	}
   refresh() {
 	  this.setState({refresh:this.state.refresh!==true?true:false})
   }
@@ -87,10 +104,17 @@ class App extends Component {
 	  window.app.okButton.disabled = this.titleInput.value.trim()===""
   }
   
-  creatParagraph() {
+  createParagraph() {
 	  return <div>
 	  	<div><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input ref={(node)=>{this.titleInput = node}} defaultValue={"Paragraph_"+new Date().valueOf()} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>
 	  	<div style={{padding:"10px", display:"flex", adjustItems:"flex-start"}}><div style={{display:"inline-block", width:"100px", paddingRight:"7px"}}>Content</div><textarea  ref={(node)=>{this.contentTextarea = node}} style={{width:"450px", height:"350px"}}></textarea></div>
+	  	
+	  </div>
+  }
+  editParagraph(entity) {
+	  return <div>
+	  	<div><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input ref={(node)=>{this.titleInput = node}} defaultValue={entity.name} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>
+	  	<div style={{padding:"10px", display:"flex", adjustItems:"flex-start"}}><div style={{display:"inline-block", width:"100px", paddingRight:"7px"}}>Content</div><textarea defaultValue={entity.content} ref={(node)=>{this.contentTextarea = node}} style={{width:"450px", height:"350px"}}></textarea></div>
 	  	
 	  </div>
   }
@@ -118,6 +142,8 @@ class App extends Component {
                              
                          },
                          "handler": function () {
+                        	 window.pages = [window.entityMap["_start_"]]
+                        	 
                         	 window.app.state.topView = "StoryReader"
                         		 this.props.container.refresh()
                                  window.app.refresh()
@@ -134,7 +160,7 @@ class App extends Component {
         	this.state.topView!=="Editor" && 
         	<header className="App-header">
           		<h3 className="App-title">Welcome to Store Builder</h3>
-          		<div><button onClick={e=>{saveStory("StoryA")}}>Save</button><button onClick={e=>{resetStory("StoryA")}}>Reset</button></div>
+          		<div><button onClick={e=>{window.saveStory("StoryA")}}>Save</button><button onClick={e=>{window.resetStory("StoryA")}}>Reset</button></div>
           	</header>
         }
         {

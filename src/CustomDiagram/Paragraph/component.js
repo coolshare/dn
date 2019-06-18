@@ -59,7 +59,7 @@ const Paragraph = (props: ParagraphProps) => (
     />
     <Name
       onDoubleClick={() => { 
-    	  props.toggleEdit(true) 
+    	  props.toggleEdit(true, props.model.id) 
     }}
       style={{ display: !props.isEditing ? 'block' : 'none' }}
     >
@@ -98,8 +98,16 @@ class ParagraphComponent extends React.PureComponent<
     }
   };
 
-  toggleEdit = (isEditing: boolean) => {
-	  window.app.switchView("Editor", this)
+  toggleEdit = (isEditing: boolean, id) => {
+	  var entity = window.entityMap[id]
+	  window.app.showDialog(window.app.editParagraph(entity), {title:"Edit "+entity.name, hideX:true, handleOK:function() {
+  		
+  		entity.name = window.app.titleInput.value
+  		entity.content = window.app.contentTextarea.value
+  		window.saveStory()
+  		window.location.reload()
+  	}})
+	 // window.app.switchView("Editor", this)
     /*const { textarea } = this;
     if (isEditing && textarea) {
       setTimeout(() => textarea.focus(), 16 * 4);
