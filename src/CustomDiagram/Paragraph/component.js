@@ -37,6 +37,7 @@ const EditName = style.textarea`
 
 export type ParagraphProps = DiagComponentProps & {
   name: string,
+  content: string,
   isEditing: boolean,
   toggleEdit: boolean => void,
   refreshName: (SyntheticStartPoint<HTMLTextAreaElement>) => void,

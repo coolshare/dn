@@ -45,11 +45,21 @@ var contextMenuActions = function contextMenuActions(props) {
   var addEntities = props.entityTypeNames.map(function (entityTypeName) {
     return {
       action: function action() {
-    	window.app.showDialog(window.app.creatParagraph(), "Create "+entityTypeName)
-        return props.addLinkedEntity({
+    	window.app.showDialog(window.app.creatParagraph(), {title:"Create "+entityTypeName, hideX:true, handleOK:function() {
+    		
+    		var entity = props.defaultEntity({ entityType: entityTypeName })
+    			entity.name = window.app.titleInput.value
+    			entity.content = window.app.contentTextarea.value
+    		var action = props.addLinkedEntity({
+    	          entity: entity,
+    	          id: props.model.id
+    	        });
+    		
+    	}})
+        /*return props.addLinkedEntity({
           entity: props.defaultEntity({ entityType: entityTypeName }),
           id: props.model.id
-        });
+        });*/
       },
       iconVariety: entityTypeName,
       label: 'Add ' + entityTypeName

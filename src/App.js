@@ -72,10 +72,10 @@ class App extends Component {
   refresh() {
 	  this.setState({refresh:this.state.refresh!==true?true:false})
   }
-  showDialog(content, title) {
+  showDialog(content, options={}) {
 	  var d = undefined
 	  if (content!==undefined) {
-		  d = Object.assign({}, {content:content, title:title})
+		  d = Object.assign({}, {content:content, options})
 	  }
 	  this.setState({Dialog:d})
   }
@@ -83,9 +83,15 @@ class App extends Component {
 	  this.setState({topView:v})
   }
   
+  handleTitleChange() {
+	  window.app.okButton.disabled = this.titleInput.value.trim()===""
+  }
+  
   creatParagraph() {
 	  return <div>
-	  	PPPP
+	  	<div><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input ref={(node)=>{this.titleInput = node}} defaultValue={"Paragraph_"+new Date().valueOf()} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>
+	  	<div style={{padding:"10px", display:"flex", adjustItems:"flex-start"}}><div style={{display:"inline-block", width:"100px", paddingRight:"7px"}}>Content</div><textarea  ref={(node)=>{this.contentTextarea = node}} style={{width:"450px", height:"350px"}}></textarea></div>
+	  	
 	  </div>
   }
   
@@ -122,7 +128,7 @@ class App extends Component {
     return (
       <div className="App">
       	{ 
-      		this.state.Dialog && <Dialog title={this.state.Dialog.title}>{this.state.Dialog.content}</Dialog>
+      		this.state.Dialog && <Dialog options={this.state.Dialog.options}>{this.state.Dialog.content}</Dialog>
       	}      	
         {
         	this.state.topView!=="Editor" && 
