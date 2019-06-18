@@ -51,14 +51,17 @@ var contextMenuActions = function contextMenuActions(props) {
     				alert("Branching logic only available for Paragraphs with more than one branches.")
     				return
     			}
-    			window.app.showDialog(window.app.createBranchingLogic(), {title:"Create "+entityTypeName, hideX:true, height:"400px", handleOK:function() {
+
+    			window.app.showDialog(window.app.handleBranchingLogic(), {title:"Create "+entityTypeName, hideX:true, height:"400px", handleOK:function() {
     				var branchingLogic = {question:window.app.questionInput.value.trim(), selections:[]}
     				for (var i=0; i<4; i++) {
     					var item = window.app["selectionInput_"+i].value.trim()
     					if (item==="") {
-    						continue
+    						branchingLogic.selections.push({})
+    					} else {
+    						branchingLogic.selections.push({selection:item, branch:window.app["branchSelect_"+i].value})
     					}
-    					branchingLogic.selections.push({selection:item, branch:window.app["branchSelect_"+i].value})
+    					
     				}
     				window.app.selectedEnity.branchingLogic = branchingLogic
         		

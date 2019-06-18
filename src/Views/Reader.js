@@ -19,7 +19,39 @@ export default class Reader extends Component {
 	componentDidMount(){
 
 	}
+	handleMouseMove(e) {
+		var x = e.clientX
+		if (x>window.innerWidth/2+100) {
+			if (window.pages[window.pages.length-1].linksTo===undefined && this.state.selected  === window.pages.length || this.state.selected  === window.pages.length+1) {
+				e.target.style.cursor = "default"
+				return
+			}
+			e.target.style.cursor = "e-resize"
+		} else if (x<window.innerWidth/2-100) {
+			if (this.state.selected<2) {
+				e.target.style.cursor = "default"
+				return
+			}
+			e.target.style.cursor = "w-resize"
+		} else {
+			e.target.style.cursor = "default"
+		}
+	}
 	
+	handleClick(e) {
+		var x = e.clientX
+		if (x>window.innerWidth/2+100) {
+			if (window.pages[window.pages.length-1].linksTo===undefined && this.state.selected  === window.pages.length || this.state.selected  === window.pages.length+1) {
+				return
+			}
+			this.next.call(this)
+		} else if (x<window.innerWidth/2-100) {
+			if (this.state.selected<2) {
+				return
+			}
+			this.previous.call(this)
+		}
+	}
 	
 	handleSelectedChange(selected) {
         this.setState({selected})
@@ -39,8 +71,22 @@ export default class Reader extends Component {
         	}
         	var index = 0
         	if (node.linksTo.length>1) {
-        		if (node.question) {
-        			
+        		if (node.branchingLogic) {
+        			window.app.showDialog(window.app.showBranchingLogic.call(window.app, node), {title:"Please select one", hideX:true, height:"400px", handleOK:function() {
+        				debugger
+        				var n = window.entityMap[window.branchingLogicSelection]
+        				if (n) {
+        					window.pages.push(n)
+            	    		var n = window.entityMap[node.linksTo[index].target]
+            				window.pages.push(n)
+        				} else {
+        					index = Math.floor(Math.random()*node.linksTo.length)
+        					var n = window.entityMap[node.linksTo[index].target]
+        					window.pages.push(n)
+        				}
+        	    		
+        			}})
+        			return
         		} else {
         			index = Math.floor(Math.random()*node.linksTo.length)
         		}
@@ -58,7 +104,7 @@ export default class Reader extends Component {
     
 	render() {
 		var self = this
-		return <div style={{"height":"650px", "width":"1000px", paddingTop:"10px", paddingBottom:"10px"}}>
+		return <div style={{"height":"650px", "width":"1000px", paddingTop:"10px", paddingBottom:"10px"}} onClick={(e)=>{this.handleClick(e)}} onMouseMove={(e)=>{this.handleMouseMove(e)}}>
 				<button style={{margin:"10px"}}
 			        onClick={this.previous}
 			        disabled={this.state.selected<2}

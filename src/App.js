@@ -100,17 +100,37 @@ class App extends Component {
 	  this.setState({topView:v})
   }
   
+  handleShowSelect(e) {
+	  window.branchingLogicSelection = e.target.id
+  }
+  
   handleTitleChange() {
 	  window.app.okButton.disabled = this.titleInput.value.trim()===""
   }
+  showBranchingLogic(node){
+	  var selections = []
+	  for (let i=0; i<4; i++) {
+		  var exist = node.branchingLogic?node.branchingLogic.selections[i]:{}
+		  if (exist.selection===undefined) {
+			  continue
+		  }
+		  selections.push(<div style={{padding:"10px"}}><input id={exist.branch} ref={(node)=>{this["selection_"+i]}} onClick={(e)=>{this.handleShowSelect(e)}} type="radio" name="selection"/>{(exist.selection)}</div>)
+	  }
+	  return <div>
+	  	<h3 style={{padding:"20px"}}>{node.branchingLogic.question}</h3>
+	  	<ul>{selections}</ul>
+	  	
+	  </div>
+  }
   
-  createBranchingLogic() {
+  handleBranchingLogic() {
 	  var node = window.app.selectedEnity
 	  var selections = []
 	  var dd = ["A", "B", "C", "D"]
 	  for (let i=0; i<4; i++) {
-		  selections.push(<ul><li>{"Selection "+(dd[i])}</li><span>If select:</span><input style={{marginRight:"10px"}} ref={(node)=>{this["selectionInput_"+i] = node}} /><span style={{marginLeft:"10px"}}>go to</span>
-		  	<select ref={(node)=>{this["branchSelect_"+i] = node}} ><option value="_RANDOM_">Randomly selected one</option>
+		  var exist = node.branchingLogic?node.branchingLogic.selections[i]:{}
+		  selections.push(<ul><li>{"Selection "+(dd[i])}</li><span>If select:</span><input defaultValue={exist.selection} style={{marginRight:"10px"}} ref={(node)=>{this["selectionInput_"+i] = node}} /><span style={{marginLeft:"10px"}}>go to</span>
+		  	<select defaultValue={exist.branch} ref={(node)=>{this["branchSelect_"+i] = node}} ><option value="_RANDOM_">Randomly selected one</option>
 		  		{
 		  			node.linksTo.map((link, idx)=>{
 		  				var n = window.entityMap[link.target]
@@ -121,11 +141,12 @@ class App extends Component {
 		  </ul>)
 	  }
 	  return <div>
-	  	<div><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Question:</div><input style={{marginLeft:"10px", width:"400px"}} ref={(node)=>{this.questionInput = node}}  /></div>
+	  	<div><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Question:</div><input style={{marginLeft:"10px", width:"400px"}} ref={(node)=>{this.questionInput = node}} defaultValue={node.branchingLogic && node.branchingLogic.question||""} /></div>
 	  	<div>{selections}</div>
 	  	
 	  </div>
   }
+  
   createParagraph() {
 	  return <div>
 	  	<div><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input ref={(node)=>{this.titleInput = node}} defaultValue={"Paragraph_"+new Date().valueOf()} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>

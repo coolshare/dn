@@ -22,7 +22,7 @@ window.get = function (url, callback){
 		  }
 		}).fail(function(response) {
 			
-			console.log('Error');
+			console.log('Error when get');
 		});
 }
 window.loadStory = function (storyId, callback) {
@@ -36,6 +36,7 @@ window.loadStory = function (storyId, callback) {
 		}
 		callback()
 		window.curStory = storyId
+		console.log(JSON.stringify(window.curState, null, 4))
 	})
 }
 
