@@ -33,19 +33,22 @@ export default class Reader extends Component {
 
     next() {
     	var node = window.pages[window.pages.length-1]
-    	if (node.linksTo===undefined) {
-    		return
+    	if (this.state.selected+1>window.pages.length) {
+    		if (node.linksTo===undefined) {
+        		return
+        	}
+        	var index = 0
+        	if (node.linksTo.length>1) {
+        		if (node.question) {
+        			
+        		} else {
+        			index = Math.floor(Math.random()*node.linksTo.length)
+        		}
+        	} 
+    		var n = window.entityMap[node.linksTo[index].target]
+    		window.pages.push(n)
     	}
-    	var index = 0
-    	if (node.linksTo.length>1) {
-    		if (node.question) {
-    			
-    		} else {
-    			index = Math.floor(Math.random()*node.linksTo.length)
-    		}
-    	} 
-		var n = window.entityMap[node.linksTo[index].target]
-		window.pages.push(n)
+    	
 
         this.setState(state => ({
             selected: state.selected + 1
@@ -55,8 +58,16 @@ export default class Reader extends Component {
     
 	render() {
 		var self = this
-		return <div style={{"height":"650px", "width":"1000px"}}>
-					<FlippingPages
+		return <div style={{"height":"650px", "width":"1000px", paddingTop:"10px", paddingBottom:"10px"}}>
+				<button style={{margin:"10px"}}
+			        onClick={this.previous}
+			        disabled={this.state.selected<2}
+			    	>Previous</button>
+			    <button
+			        onClick={this.next}
+			        disabled={window.pages[window.pages.length-1].linksTo===undefined && this.state.selected  === window.pages.length || this.state.selected  === window.pages.length+1}
+			    	>Next</button>
+    		<FlippingPages
 			        className="App-pages"
 			        direction="horizontal"
 			        selected={this.state.selected}
@@ -74,13 +85,13 @@ export default class Reader extends Component {
 			    }			       
 			    </FlippingPages>
 			    {/* Buttons are required for keyboard navigation */}
-			    <button
+			    <button  style={{margin:"10px"}}
 			        onClick={this.previous}
 			        disabled={this.state.selected<2}
 			    >Previous</button>
-			    <button
+			    <button 
 			        onClick={this.next}
-			        disabled={window.pages[window.pages.length-1].linksTo===undefined || this.state.selected + 1 === window.pages.length}
+			        disabled={window.pages[window.pages.length-1].linksTo===undefined && this.state.selected  === window.pages.length || this.state.selected  === window.pages.length+1}
 			    >Next</button>
 		</div>
 	}
