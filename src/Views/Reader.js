@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import FlippingPages from 'flipping-pages'
 /* IMPORTANT */
 import '../css/FlippingPages.css'
-import bg1 from '../images/bg1.png';
+import '../css/Reader.css'
 
 export default class Reader extends Component {
 	constructor(props) {
@@ -109,7 +109,7 @@ export default class Reader extends Component {
     
 	render() {
 		var self = this
-		return <div style={{"height":"650px", "width":"1000px", paddingTop:"10px", paddingBottom:"10px"}} onClick={(e)=>{this.handleClick(e)}} onMouseMove={(e)=>{this.handleMouseMove(e)}}>
+		return <div style={{"height":"500px", "width":"1000px", paddingTop:"10px", paddingBottom:"10px"}} onClick={(e)=>{this.handleClick(e)}} onMouseMove={(e)=>{this.handleMouseMove(e)}}>
 				<button style={{margin:"10px"}}
 			        onClick={this.previous}
 			        disabled={this.state.selected<2}
@@ -128,9 +128,13 @@ export default class Reader extends Component {
 			        touch-action="none"
 			    > {
 			    	window.pages.map((page, idx)=>{
-			    		return (<div classNam="page" key={idx} style={{width:"900px", height:"650px", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundImage: `url(${bg1})`}}>
-			    			<h3 style={{paddingLeft:"80px", paddingTop:"30px"}} ref={(node)=>{self.references["title_"+idx]=node}}>{page.name}</h3>
-			    			<p  style={{paddingLeft:"80px", paddingTop:"30px"}} ref={(node)=>{self.references["content_"+idx]=node}}>{page.content||"[Content of "+page.name+"]"}</p>
+			    		return (<div className="book2" key={idx} style={{width:"970px", marginLeft:"20px"}}>
+			    			<div style={{paddingLeft:"180px", marginTop:"30px"}} ref={(node)=>{self.references["title_"+idx]=node}}>{page.name}</div>
+			    			<div  style={{display:"flex", justifyContent:"space-between", width:"940px", padding:"10px", display:"flex", adjustItems:"flex-start"}}>
+				    	  		<p className="textarea" ref={(node)=>{this.content1 = node}} style={{float:"left",marginLeft:"30px", marginRight:"30px",width:"420px", height:"400px"}}>{page.content1||"[Content of "+page.name+"]"}</p>
+				    	  		<p  className="textarea" ref={(node)=>{this.content2 = node}} style={{float:"right",marginLeft:"30px", marginRight:"30px", width:"420px", height:"400px"}}>{page.content2||"[Content of "+page.name+"]"}</p>
+				    	  	</div>
+			    	  	
 			    		</div>)
 			    	})
 			    }			       

@@ -68,11 +68,12 @@ var contextMenuActions = function contextMenuActions(props) {
         	}})
         	
     	} else {
-    		window.app.showDialog(window.app.createParagraph(), {title:"Create "+entityTypeName, hideX:true, handleOK:function() {
+    		window.app.showDialog(window.app.createParagraph(), {top:"10px", width:"920px", height:"650px", title:"Create "+entityTypeName, hideX:true, handleOK:function() {
         		
         		var entity = props.defaultEntity({ entityType: entityTypeName })
         			entity.name = window.app.titleInput.value
-        			entity.content = window.app.contentTextarea.value
+        			entity.content1 = window.app.contentTextarea2.value
+        			entity.content2 = window.app.contentTextarea2.value
         		var action = props.addLinkedEntity({
         	          entity: entity,
         	          id: props.model.id

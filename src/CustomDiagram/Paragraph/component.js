@@ -37,7 +37,8 @@ const EditName = style.textarea`
 
 export type ParagraphProps = DiagComponentProps & {
   name: string,
-  content: string,
+  content1: string,
+  content2: string,
   isEditing: boolean,
   toggleEdit: boolean => void,
   refreshName: (SyntheticStartPoint<HTMLTextAreaElement>) => void,
@@ -76,6 +77,8 @@ type ParagraphComponentProps = DiagComponentProps;
 type ParagraphComponentState = {
   isEditing: boolean,
   name: string,
+  content1:string,
+  content2:string
 };
 class ParagraphComponent extends React.PureComponent<
   ParagraphComponentProps,
@@ -86,6 +89,8 @@ class ParagraphComponent extends React.PureComponent<
   state = {
     isEditing: false,
     name: this.props.model.name,
+    content1: this.props.model.content1,
+    content2: this.props.model.content2,
   };
 
   componentWillUnmount() {
@@ -100,10 +105,11 @@ class ParagraphComponent extends React.PureComponent<
 
   toggleEdit = (isEditing: boolean, id) => {
 	  var entity = window.entityMap[id]
-	  window.app.showDialog(window.app.editParagraph(entity), {title:"Edit "+entity.name, hideX:true, handleOK:function() {
+	  window.app.showDialog(window.app.editParagraph(entity), {top:"10px", width:"920px", height:"650px",title:"Edit "+entity.name, hideX:true, handleOK:function() {
   		
   		entity.name = window.app.titleInput.value
-  		entity.content = window.app.contentTextarea.value
+  		entity.content1 = window.app.contentTextarea1.value
+  		entity.content2 = window.app.contentTextarea2.value
   		window.saveStory()
   		window.location.reload()
   	}})
@@ -124,11 +130,11 @@ class ParagraphComponent extends React.PureComponent<
     switch (ev.key) {
       case 'Enter':
         this.toggleEdit(false);
-        this.props.setName({ id: this.props.model.id, name: this.state.name });
+        this.props.setName({ id: this.props.model.id, name: this.state.name, content1: this.state.content1, content2: this.state.content2 });
         break;
       case 'Escape':
         this.toggleEdit(false);
-        this.setState({ name: this.props.model.name });
+        this.setState({ name: this.props.model.name, content1: this.state.content1, content2: this.state.content2 });
         break;
       // no default
     }
@@ -140,6 +146,8 @@ class ParagraphComponent extends React.PureComponent<
         {...this.props}
         isEditing={this.state.isEditing}
         name={this.state.name}
+        content1={this.state.content1}
+        content2={this.state.content2}
         toggleEdit={this.toggleEdit}
         refreshName={this.refreshName}
         handleKeyPress={this.handleKeyPress}

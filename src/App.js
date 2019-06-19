@@ -5,6 +5,7 @@ import Reader from './Views/Reader'
 import Dialog from './Views/Dialog'
 import Tab from './Components/Tab'
 import $ from 'jquery';
+import './css/Reader.css'
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 
@@ -148,17 +149,21 @@ class App extends Component {
   }
   
   createParagraph() {
-	  return <div>
-	  	<div><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input ref={(node)=>{this.titleInput = node}} defaultValue={"Paragraph_"+new Date().valueOf()} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>
-	  	<div style={{padding:"10px", display:"flex", adjustItems:"flex-start"}}><div style={{display:"inline-block", width:"100px", paddingRight:"7px"}}>Content</div><textarea  ref={(node)=>{this.contentTextarea = node}} style={{width:"450px", height:"350px"}}></textarea></div>
-	  	
+	  return <div >
+	  	<div style={{marginBottom:"5px"}}><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input style={{width:"300px"}} ref={(node)=>{this.titleInput = node}} defaultValue={"Paragraph_"+new Date().valueOf()} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>
+	  	<div  className="book1" style={{display:"flex", justifyContent:"space-between", width:"900px", padding:"10px", display:"flex", adjustItems:"flex-start"}}>
+	  		<textarea className="textarea" ref={(node)=>{this.contentTextarea1 = node}} style={{float:"left",margin:"30px", width:"380px", height:"400px"}}></textarea>
+	  		<textarea  className="textarea" ref={(node)=>{this.contentTextarea2 = node}} style={{float:"right", margin:"30px", width:"380px", height:"400px"}}></textarea>
+	  	</div>
 	  </div>
   }
   editParagraph(entity) {
-	  return <div>
-	  	<div><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input ref={(node)=>{this.titleInput = node}} defaultValue={entity.name} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>
-	  	<div style={{padding:"10px", display:"flex", adjustItems:"flex-start"}}><div style={{display:"inline-block", width:"100px", paddingRight:"7px"}}>Content</div><textarea defaultValue={entity.content} ref={(node)=>{this.contentTextarea = node}} style={{width:"450px", height:"350px"}}></textarea></div>
-	  	
+	  return <div >
+	  	<div style={{marginBottom:"5px"}}><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input style={{width:"300px"}} ref={(node)=>{this.titleInput = node}} defaultValue={entity.name} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>
+	  	<div  className="book1" style={{display:"flex", justifyContent:"space-between", width:"900px", padding:"10px", display:"flex", adjustItems:"flex-start"}}>
+	  		<textarea className="textarea"  ref={(node)=>{this.contentTextarea1 = node}} style={{float:"left",margin:"30px", width:"380px", height:"400px"}}>{entity.content1}</textarea>
+	  		<textarea className="textarea"  ref={(node)=>{this.contentTextarea2 = node}} style={{float:"right", margin:"30px", width:"380px", height:"400px"}}>{entity.content2}</textarea>
+	  	</div>
 	  </div>
   }
   
