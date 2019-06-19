@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import CustomDiagram from './CustomDiagram';
-import Editor from './Views/Editor'
 import Reader from './Views/Reader'
 import Dialog from './Views/Dialog'
 import Tab from './Components/Tab'
@@ -20,10 +19,11 @@ var beforeNavigatedAway = function () {
 
 window.addEventListener('beforeunload', beforeNavigatedAway, false);
 window.addEventListener('unload', beforeNavigatedAway, false);
-
+window.storyId = "StoryA"
 
 
 window.saveStory = function(storyId) {
+	
 	storyId = storyId||window.curStory
 	var data = {
 			fileName:storyId+".txt",
@@ -34,8 +34,60 @@ window.saveStory = function(storyId) {
 	
 }
 
+window.saveToDisk = function(storyId) {
+	storyId = storyId||window.curStory
+	var FileSaver = require('file-saver');
+	var blob = new Blob([JSON.stringify(window.curState)], {type: "text/plain;charset=utf-8"});
+	FileSaver.saveAs(blob, storyId+".txt");
 
-window.resetStory = function (storyId) {
+	
+}
+
+
+window.dispFile = function(contents) {
+	window.curState = JSON.parse(contents)
+	window.entityMap = {}
+	for (var i=0; i<window.curState.length; i++) {
+		var item = window.curState[i]
+		window.entityMap[item.id] = item
+	}
+	window.app.customDiagram.refresh()
+}
+window.clickElem = function(elem) {
+	// Thx user1601638 on Stack Overflow (6/6/2018 - https://stackoverflow.com/questions/13405129/javascript-create-and-save-file )
+	var eventMouse = document.createEvent("MouseEvents")
+	eventMouse.initMouseEvent("click", true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
+	elem.dispatchEvent(eventMouse)
+}
+window.openFile = function(func) {
+	var readFile = function(e) {
+		var file = e.target.files[0];
+		if (!file) {
+			return;
+		}
+		var reader = new FileReader();
+		reader.onload = function(e) {
+			var contents = e.target.result;
+			fileInput.func(contents)
+			document.body.removeChild(fileInput)
+		}
+		reader.readAsText(file)
+	}
+	var fileInput = document.createElement("input")
+	fileInput.type='file'
+	fileInput.style.display='none'
+	fileInput.onchange=readFile
+	fileInput.func=func
+	document.body.appendChild(fileInput)
+	window.clickElem(fileInput)
+}
+
+
+window.createStory = function (storyId) {
+	window.app.showDialog(window.app.createStoryContent(), {top:"10px", width:"920px", height:"650px", title:"Create a Story", hideX:true, handleOK:function() {
+		debugger
+	}})
+		
 	window.curState = [{"id":"_start_","type":"StartPoint","width":40,"height":40,"x":95,"y":94,"name":"Home"}]
 	var data = {
 			fileName:storyId+".txt",
@@ -148,6 +200,15 @@ class App extends Component {
 	  </div>
   }
   
+  createStoryContent() {
+	  return <div >
+	  	<div style={{marginBottom:"5px"}}><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input style={{width:"300px"}} ref={(node)=>{this.titleInput = node}} defaultValue={"Paragraph_"+new Date().valueOf()} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>
+	  	<div  className="book1" style={{display:"flex", justifyContent:"space-between", width:"900px", padding:"10px", display:"flex", adjustItems:"flex-start"}}>
+	  		<textarea className="textarea" ref={(node)=>{this.contentTextarea1 = node}} style={{float:"left",margin:"30px", width:"380px", height:"400px"}}></textarea>
+	  		<textarea  className="textarea" ref={(node)=>{this.contentTextarea2 = node}} style={{float:"right", margin:"30px", width:"380px", height:"400px"}}></textarea>
+	  	</div>
+	  </div>
+  }
   createParagraph() {
 	  return <div >
 	  	<div style={{marginBottom:"5px"}}><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input style={{width:"300px"}} ref={(node)=>{this.titleInput = node}} defaultValue={"Paragraph_"+new Date().valueOf()} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>
@@ -208,7 +269,10 @@ class App extends Component {
         	this.state.topView!=="Editor" && 
         	<header className="App-header">
           		<h3 className="App-title">Welcome to Store Builder</h3>
-          		<div><button onClick={e=>{window.saveStory("StoryA")}}>Save</button><button onClick={e=>{window.resetStory("StoryA")}}>Reset</button></div>
+          		<div>
+          			<button onClick={e=>{window.saveToDisk(window.storyId)}} style={{marginLeft:"20px", marginRight:"20px"}}>Save Story</button>
+          			<button onClick={e=>{window.openFile(window.dispFile)}} style={{marginLeft:"20px", marginRight:"20px"}}>Load Story</button>
+          			<button onClick={e=>{window.createStory(window.storyId)}} style={{marginLeft:"20px", marginRight:"20px"}}>New Story</button></div>
           	</header>
         }
         {
@@ -218,11 +282,8 @@ class App extends Component {
         {
           	this.state.topView==="FlowDesign"&&
           	<main className="main">
-          		<CustomDiagram  app={this}/>
+          		<CustomDiagram  ref={(node)=>{this.customDiagram = node}}/>
             </main>
-        }
-        {
-        	this.state.topView==="Editor"&&<Editor app={this} />
         }
         {
         	this.state.topView==="StoryReader"&&<Reader app={this}/>

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "file-saver": "^2.0.2",
     "flipping-pages": "^2.1.2",
     "jquery": "^3.4.1",
     "react": "^16.2.0",

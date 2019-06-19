@@ -41,8 +41,16 @@ window.loadStory = function (storyId, callback) {
 }
 
 class CustomDiagram extends React.PureComponent {
+  constructor(props) {
+	  super(props)
+	  this.state = {}
+  }
+  refresh() {
+	  this.componentWillMount.call(this)
+	  this.setState({refresh:this.state.refresh!==true?true:false})
+  }
   componentWillMount() {
-	window.loadStory("StoryA", function() {
+	//window.loadStory(window.storyId, function() {
 		diagramStore.dispatch(setConfig(config));
 	    var mm = window.curState||model
 	    diagramStore.dispatch(setEntities(mm));
@@ -53,7 +61,7 @@ class CustomDiagram extends React.PureComponent {
 	      window.curState = Object.assign([], entityState)
 	      console.info(entityState)
 	    });
-	})
+	//})
     
   }
   render() {
