@@ -64,8 +64,9 @@ export default class Reader extends Component {
     }
 
     next() {
-    	var node = window.pages[window.pages.length-1]
-    	if (this.state.selected+1>window.pages.length) {
+    	var self = this
+    	var node = window.pages[this.state.selected-1]
+    	if (this.state.selected>=window.pages.length) {
     		if (node.linksTo===undefined) {
         		return
         	}
@@ -73,16 +74,20 @@ export default class Reader extends Component {
         	if (node.linksTo.length>1) {
         		if (node.branchingLogic) {
         			window.app.showDialog(window.app.showBranchingLogic.call(window.app, node), {title:"Please select one", hideX:true, height:"400px", handleOK:function() {
-        				debugger
+        				
         				var n = window.entityMap[window.branchingLogicSelection]
         				if (n) {
         					window.pages.push(n)
-            	    		var n = window.entityMap[node.linksTo[index].target]
-            				window.pages.push(n)
+            				self.setState(state => ({
+					            selected: state.selected + 1
+					        }))
         				} else {
         					index = Math.floor(Math.random()*node.linksTo.length)
         					var n = window.entityMap[node.linksTo[index].target]
         					window.pages.push(n)
+        					self.setState(state => ({
+					            selected: state.selected + 1
+					        }))
         				}
         	    		
         			}})
@@ -123,7 +128,7 @@ export default class Reader extends Component {
 			        touch-action="none"
 			    > {
 			    	window.pages.map((page, idx)=>{
-			    		return (<div key={idx} style={{width:"900px", height:"650px", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundImage: `url(${bg1})`}}>
+			    		return (<div classNam="page" key={idx} style={{width:"900px", height:"650px", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundImage: `url(${bg1})`}}>
 			    			<h3 style={{paddingLeft:"80px", paddingTop:"30px"}} ref={(node)=>{self.references["title_"+idx]=node}}>{page.name}</h3>
 			    			<p  style={{paddingLeft:"80px", paddingTop:"30px"}} ref={(node)=>{self.references["content_"+idx]=node}}>{page.content||"[Content of "+page.name+"]"}</p>
 			    		</div>)
