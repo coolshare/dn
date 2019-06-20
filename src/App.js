@@ -110,6 +110,31 @@ window.openFile = function(func) {
 	window.clickElem(fileInput)
 }
 
+window.confirmBox = function(message, title, handleYes, handleNo) {
+	window.app.showDialog(<div>{message}</div>, {top:"10px", width:"600px", height:"150px", title:title, hideX:true, handleOK:function() {
+		if (handleYes) {
+			handleYes()
+		}
+	}, handleCancel:function() {
+		if (handleNo) {
+			handleNo()
+		}
+	}})
+}
+window.alertBox = function(message, title) {
+	window.app.showDialog(<div>{message}</div>, {top:"10px", width:"500px", height:"150px", title:title})
+}
+window.deleteStory = function() {
+	if (window.curStory===undefined) {
+		return
+	}
+	window.confirmBox("Are you sure to delete "+window.curStory.name+"?", "Delete a Story", function() {
+		delete window.curUser.storyMap[window.curStory.id]
+		window.curStory = undefined
+		window.app.refresh()
+	})
+}
+
 window.initServer = function(response) {
 	window.post( window.homeUrl+"/mkdir", {filePath:["./db", "./db/dn", "./db/dn/stories", "./db/dn/user"]}, function() {
 		if (response) {
@@ -378,10 +403,12 @@ class App extends Component {
 		    		<div ref={(node)=>{self.dropdown=node}} style={{display:"inline-block", cursor:"pointer", textAlign:"center", paddingLeft:"25px", paddingRight:"25px", width:"30px", background:"#ccc", border: "solid 1px #000"}} onClick={e=>{window.showDD.call(self, true)}}>File</div>
 				    {
 				    	<div className="shadow" style={{display:"none", position:"fixed", width:"200px", zIndex:104, background:"#EEE", padding:"10px", borderRadius:"2px", boxShadow:"rgba(0, 0, 0, 0.5) 5px 5px 15px 0px"}} ref={(node)=>{self.dd = node}} >												
-							 <div className="FlatItem"  onClick={e=>{window.createStory()}}><span style={{padding:"7px"}}>New</span></div>
-							 <div className="FlatItem"  onClick={e=>{window.openFile(window.dispFile)}}><span style={{padding:"7px"}}>Load</span></div>
-							 <div className="FlatItem" onClick={e=>{window.saveStories()}}><span style={{padding:"7px"}}>Update Server</span></div>
-							 <div className="FlatItem" onClick={e=>{window.saveToDisk()}}><span style={{padding:"7px"}}>Save</span></div>
+							 <div className="FlatItem"  onClick={e=>{window.createStory()}}><span style={{padding:"7px"}}>New</span></div>							 
+							 <div className="FlatItem" onClick={e=>{window.saveStories()}}><span style={{padding:"7px"}}>Save</span></div>
+							 <div className="FlatItem" onClick={e=>{window.deleteStory()}}><span style={{padding:"7px", color:window.curStory?"#000":"#999"}}>Delete</span></div>
+							 <hr/>
+							 <div className="FlatItem"  onClick={e=>{window.openFile(window.dispFile)}}><span style={{padding:"7px"}}>Import</span></div>
+							 <div className="FlatItem" onClick={e=>{window.saveToDisk()}}><span style={{padding:"7px"}}>Export</span></div>
 						</div>
 				    }
 					<div style={{display:"inline-block", marginLeft:"10px"}}>

@@ -6,8 +6,8 @@ import BranchingLogicIcon from './BranchingLogic/icon';
 const config = {
   entityTypes: {
     Paragraph: {
-      width: 125,
-      height: 75,
+      width: 90,
+      height: 60,
     },
     BranchingLogic: {
     	width: 50,

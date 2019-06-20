@@ -49,7 +49,7 @@ var contextMenuActions = function contextMenuActions(props) {
       action: function action() {
     	if (entityTypeName==="BranchingLogic") {
     			if (window.app.selectedEnity.linksTo===undefined) {
-    				alert("Branching logic only available for Paragraphs with more than one branches.")
+    				window.alertBox("Branching logic only available for Paragraphs with more than one branches.")
     				return
     			}
 
@@ -86,7 +86,11 @@ var contextMenuActions = function contextMenuActions(props) {
 var EntityStyle = style.div(_templateObject);
 
 var Entity = function Entity(props) {
-	var ch = props.model.branchingLogic?(<div><a href="javascript:void()" onClick={e=>{window.popupBranchingLogic()}} style={{position:"absolute", top:"5px", left:"5px"}}><FontAwesomeIcon icon="code-branch"/></a>{props.children}</div>):props.children
+	var ch = [<span onClick={e=>{window.popupBranchingLogic()}} style={{position:"absolute", top:"5px", left:(props.model.width-20)+"px"}}><FontAwesomeIcon icon="pen"/></span>]
+	if (props.model.branchingLogic) {
+		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{position:"absolute", top:"5px", left:"5px"}}><FontAwesomeIcon icon="code-branch"/></span>)
+	}
+	ch = <div>{ch}{props.children}</div>
 	
 	return React.createElement(
     EntityStyle,

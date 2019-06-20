@@ -32,9 +32,9 @@ export default class Login extends Component {
 			
 		} else {
 			if (u===undefined) {
-				alert("Wrong user name")
+				window.alertBox("Wrong user name", "Warning")
 			} else {
-				alert("Wrong password")
+				window.alertBox("Wrong password", "Warning")
 			}
 			
 		}

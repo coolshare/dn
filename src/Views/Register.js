@@ -17,7 +17,7 @@ export default class Register extends Component {
 		var res = {user:this.userName.value, password:this.password.value}
 		
 		if (window.userMap[res.user]!==undefined) {
-			alert("The user name has been used by others. Please enter a different one")
+			window.alertBox("The user name has been used by others. Please enter a different one", "Warning")
 			return
 		}
 		window.users.push(res)

@@ -11,8 +11,8 @@ const model: EntityState = [
   {
     id: '_start_',
     type: 'StartPoint',
-    width: 40,
-    height: 40,
+    width: 100,
+    height: 50,
     x: 95,
     y: 94,
     name: 'StartPoint'
