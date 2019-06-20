@@ -11,10 +11,24 @@ export default class Login extends Component {
 
         
     }
-
+	componentDidMount() {
+		window.loadUsers()
+	}
 
 	handleLogin() {
-		
+		var user = this.userName.value
+		var password = this.password.value
+		var u = window.userMap[user]
+		if (u!==undefined && u.password===password) {
+			window.app.switchView("MainView")
+		} else {
+			if (u===undefined) {
+				alert("Wrong user name")
+			} else {
+				alert("Wrong password")
+			}
+			
+		}
 	}
 	
 	handleSignUp() {
@@ -35,7 +49,7 @@ export default class Login extends Component {
 			    	<div >												
 						 <div><input style={{margin:"7px"}} ref={(node)=>{this.userName=node}} placeholder="User Name"/></div>
 						 <div><input style={{margin:"7px"}} ref={(node)=>{this.password=node}} type="password" placeholder="Password"/></div>
-						 <div><button style={{margin:"7px"}} ref={(node)=>{this.RegisterButton=node}} onClick={e=>{this.handleLogin()}} disabled>Register</button><a href="javascript:void(0)" onClick={e=>{this.handleSignUp()}}>Sign up</a></div>
+						 <div><button style={{margin:"7px"}} ref={(node)=>{this.RegisterButton=node}} onClick={e=>{this.handleLogin()}}>Login</button><a href="javascript:void(0)" onClick={e=>{this.handleSignUp()}}>Sign up</a></div>
 				   </div>
 			
 			    </div>

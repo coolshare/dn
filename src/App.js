@@ -34,14 +34,14 @@ window.addEventListener("click", function(e) {
 	window.showDD.call(window.app)
 })
 
-window.loadUser = function () {
+window.loadUsers = function () {
 	var url = window.homeUrl+"?filePath="+window.userPath+"&fileName=users.txt"
 	window.get(url, function(res){
 		window.users = res
 		window.userMap = {}
 		for (var i=0; i<window.users.length; i++) {
 			var item = window.users[i]
-			window.userMap[item.id] = item
+			window.userMap[item.user] = item
 		}
 	})
 }
@@ -52,30 +52,31 @@ window.saveStory = function(storyId) {
 	var data = {
 			fileName:storyId+".txt",
 			filePath:"./temp/Stories/",
-			content:JSON.stringify(window.curState)
+			content:window.curStory
 	}
 	window.post( window.homeUrl+"/save", data);
 	
 }
 
-window.saveToDisk = function(storyId) {
-	storyId = storyId||window.curStory
+window.saveToDisk = function() {
 	var FileSaver = require('file-saver');
-	var blob = new Blob([JSON.stringify(window.curState)], {type: "text/plain;charset=utf-8"});
-	FileSaver.saveAs(blob, storyId+".txt");
+	var blob = new Blob([JSON.stringify(window.curStory)], {type: "text/plain;charset=utf-8"});
+	FileSaver.saveAs(blob, window.curStory.name+".txt");
 
 	
 }
 
 
 window.dispFile = function(contents) {
-	window.curState = JSON.parse(contents)
+	window.curStory = JSON.parse(contents)
 	window.entityMap = {}
-	for (var i=0; i<window.curState.length; i++) {
-		var item = window.curState[i]
+	for (var i=0; i<window.curStory.sections.length; i++) {
+		var item = window.curStory.sections[i]
 		window.entityMap[item.id] = item
 	}
-	window.app.customDiagram.refresh()
+	setTimeout(function() {
+		window.app.references.CustomDiagram.refresh()
+	}, 100)
 }
 window.clickElem = function(elem) {
 	// Thx user1601638 on Stack Overflow (6/6/2018 - https://stackoverflow.com/questions/13405129/javascript-create-and-save-file )
@@ -113,19 +114,12 @@ window.initServer = function(response) {
 		}
 	})
 }
-window.createStory = function (storyId) {
-	window.app.showDialog(window.app.createStoryContent(), {top:"10px", width:"920px", height:"650px", title:"Create a Story", hideX:true, handleOK:function() {
-		debugger
+window.createStory = function () {
+
+	window.app.showDialog(<StoryDefine ref={(node)=>{window.app.references.StoryDefine=node}}/>, {top:"10px", width:"600px", height:"350px", title:"Create a Story", hideX:true, handleOK:function() {
+		var storyDefine = window.app.references.StoryDefine
+		storyDefine.handleOK.call(storyDefine)
 	}})
-		
-	window.curState = [{"id":"_start_","type":"StartPoint","width":40,"height":40,"x":95,"y":94,"name":"Home"}]
-	var data = {
-			fileName:storyId+".txt",
-			filePath:"./temp/Stories/",
-			content:JSON.stringify(window.curState)
-	}
-	window.post( window.homeUrl+"/save", data);
-	window.location.reload()
 }
 window.showDD = function(show){
 	var dd = this.dd
@@ -177,7 +171,8 @@ window.post = function(url, data, response){
 class App extends Component {
   constructor(props) {
 	  super(props)
-	  this.state = {topView:"Login"}
+	  this.state = {topView:"Login", topTabView:"FlowDesign"}
+	  this.references = {}
 	  window.app = this
   }
   
@@ -185,7 +180,7 @@ class App extends Component {
 	  window.initServer(function() {
 		  window.post( window.homeUrl+"/create", {filePath:"./db/dn/user", fileName:"users.txt", "content":[]}, function() {
 	  
-			  window.loadUser()
+			  window.loadUsers()
 		  })
 	  })
 	  
@@ -296,32 +291,33 @@ class App extends Component {
   }
 
   render() {
+	  var self = this
 	  var tabProps = {
 	    		"stlyle":{"height":"100%"},
-	    		"container":this,
+	    		"container":self,
 	    		"items": [
                      {
                          "name": "FlowDesign", "label": "Story Flow Design",
                          "isSelectedFun": function () {
-                             return window.app.state.topView === "FlowDesign"
+                             return window.app.state.topTabView === "FlowDesign"
                          },
                          "handler": function () {
-                        	 window.app.state.topView = "FlowDesign"
-                        		 this.props.container.refresh()
+                        	 window.app.state.topTabView = "FlowDesign"
+                        		 self.props.container.refresh()
                                  window.app.refresh()
                          },
                      },
                      {
                          "name": "StoryReader", "label": "Story Reader",
                          "isSelectedFun": function () {
-                             return window.app.state.topView === "StoryReader"
+                             return window.app.state.topTabView === "StoryReader"
                              
                          },
                          "handler": function () {
                         	 window.pages = [window.entityMap["_start_"]]
                         	 
-                        	 window.app.state.topView = "StoryReader"
-                        		 this.props.container.refresh()
+                        	 window.app.state.topTabView = "StoryReader"
+                        		 self.props.container.refresh()
                                  window.app.refresh()
                          },
                      }
@@ -329,47 +325,40 @@ class App extends Component {
 	  
     return (
       <div className="App" style={{height:"100vh", backgroundImage: `url(${bg})`}}>
-      	{this.state.topView!=="Login"&&this.state.topView!=="Register" &&this.state.topView!=="StoryDefine" &&
+      	{self.state.topView==="MainView" &&
 	    	  <div>
-		      	{ 
-		      		this.state.Dialog && <Dialog options={this.state.Dialog.options}>{this.state.Dialog.content}</Dialog>
-		      	}      	
+		      	    	
 		
 		    	<h3 className="App-title">Welcome to Store Builder</h3>
-		    	<div><div ref={(node)=>{this.dropdown=node}} style={{cursor:"pointer", textAlign:"center", paddingLeft:"25px", paddingRight:"25px", width:"30px", background:"#ccc", border: "solid 1px #000"}} onClick={e=>{window.showDD.call(this, true)}}>File</div>
+		    	<div style={{marginLeft:"20px"}}><div ref={(node)=>{self.dropdown=node}} style={{cursor:"pointer", textAlign:"center", paddingLeft:"25px", paddingRight:"25px", width:"30px", background:"#ccc", border: "solid 1px #000"}} onClick={e=>{window.showDD.call(self, true)}}>File</div>
 			    {
-			    	<div className="shadow" style={{display:"none", position:"fixed", width:"100px", zIndex:104, background:"#EEE", padding:"10px", borderRadius:"2px", boxShadow:"rgba(0, 0, 0, 0.5) 5px 5px 15px 0px"}} ref={(node)=>{this.dd = node}} >												
-						 <div className="FlatItem"  onClick={e=>{window.createStory(window.storyId)}}><span style={{padding:"7px"}}>New</span></div>
+			    	<div className="shadow" style={{display:"none", position:"fixed", width:"100px", zIndex:104, background:"#EEE", padding:"10px", borderRadius:"2px", boxShadow:"rgba(0, 0, 0, 0.5) 5px 5px 15px 0px"}} ref={(node)=>{self.dd = node}} >												
+						 <div className="FlatItem"  onClick={e=>{window.createStory()}}><span style={{padding:"7px"}}>New</span></div>
 						 <div className="FlatItem"  onClick={e=>{window.openFile(window.dispFile)}}><span style={{padding:"7px"}}>Load</span></div>
-						 <div className="FlatItem" onClick={e=>{window.saveToDisk(window.storyId)}}><span style={{padding:"7px"}}>Save</span></div>
+						 <div className="FlatItem" onClick={e=>{window.saveToDisk()}}><span style={{padding:"7px"}}>Save</span></div>
 					</div>
 			    }
 			   </div>
-		
 		        {
-		        	this.state.topView!=="Editor" && 
-		          	<Tab {...tabProps}/>
-		        }
-		        {
-		          	this.state.topView==="FlowDesign"&&
-		          	<main className="main">
-		          		<CustomDiagram  ref={(node)=>{this.customDiagram = node}}/>
+		        	self.state.topTabView==="FlowDesign"&&  window.curStory!==undefined &&
+		          	<main className="main"   ref={(node)=>{self.references.main = node}}>
+		          		<CustomDiagram ref={(node)=>{self.references.CustomDiagram = node}}/>
 		            </main>
 		        }
 		        {
-		        	this.state.topView==="StoryReader"&&<Reader/>
+		        	self.state.topTabView==="StoryReader"&& window.curStory!==undefined && <Reader  ref={(node)=>{self.references.Reader = node}}/>
 		        }
 		    </div>
 		}
 		{
-        	this.state.topView==="Login"&&<Login/>
+        	self.state.topView==="Login"&&<Login ref={(node)=>{self.references.Login = node}}/>
         }
     	{
-        	this.state.topView==="Register"&&<Register/>
+        	self.state.topView==="Register"&&<Register ref={(node)=>{self.references.Register = node}}/>
         }
-    	{
-        	this.state.topView==="StoryDefine"&&<StoryDefine/>
-        }
+    	{ 
+      		self.state.Dialog && <Dialog ref={(node)=>{self.references.Dialog = node}} options={self.state.Dialog.options}>{self.state.Dialog.content}</Dialog>
+      	}  
       </div>
     );
   }

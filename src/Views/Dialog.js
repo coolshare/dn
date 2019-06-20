@@ -19,8 +19,8 @@ export default class Dialog extends Component {
 						</div>
 						<div className="dlgBody" style={{padding:"10px"}}>{this.props.children}</div>	
 						<div style={{padding:"10px", display:"flex", adjustItems:"center", justifyContent:"center"}}>
-							{this.props.options.hideOK!==true && <button onClick={(e)=>{window.app.showDialog();if (this.props.options.handleOK) this.props.options.handleOK.call(this)}} ref={(node)=>{window.app.okButton = node}} style={{width:"100px", marginRight:"20px"} }>OK</button>}
-							{this.props.options.hideCancel!==true && <button onClick={(e)=>{window.app.showDialog();if (this.props.options.handleCancel) this.props.options.handleCancel.call(this)}} ref={(node)=>{window.app.cancelButton = node}} style={{width:"100px"} }>Cancel</button>}
+							{this.props.options.hideOK!==true && <button onClick={(e)=>{window.app.showDialog();if (this.props.options.handleOK) this.props.options.handleOK.call(this)}} ref={(node)=>{this.okButton = node}} style={{width:"100px", marginRight:"20px"} }>OK</button>}
+							{this.props.options.hideCancel!==true && <button onClick={(e)=>{window.app.showDialog();if (this.props.options.handleCancel) this.props.options.handleCancel.call(this)}} ref={(node)=>{this.cancelButton = node}} style={{width:"100px"} }>Cancel</button>}
 						</div>	
 				</div>
 						

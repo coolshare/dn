@@ -23,7 +23,7 @@ export default class Register extends Component {
 		window.users.push(res)
 		window.post( window.homeUrl+"/save", {filePath:"./db/dn/user", fileName:"users.txt", "content":window.users}, function() {
 			window.post( window.homeUrl+"/mkdir", {filePath:["./db/dn/stories/"+res.user]})
-			window.switchView("StoryDefine")
+			window.app.switchView("Login")
 		})
 	}
 	
