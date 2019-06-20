@@ -1,3 +1,15 @@
+.FlatItem {
+	background:#EEE;
+	fontSize:10pxt;
+	color: #000;
+	cursor:pointer;
+}
+.FlatItem:hover {
+	background:#888;
+	fontSize:10pxt;
+	color: white;
+	cursor:pointer;
+}
 .textarea {
 	background-color:#EEE;
 	border-width: 0px;

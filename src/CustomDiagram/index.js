@@ -26,7 +26,7 @@ window.get = function (url, callback){
 		});
 }
 window.loadStory = function (storyId, callback) {
-	var url = "http://73.71.159.185:12345?filePath=.%2Ftemp%2FStories%2F&fileName="+encodeURIComponent(storyId+".txt")
+	var url = window.homeUrl+"?filePath="+window.storyPath+"&fileName="+encodeURIComponent(storyId+".txt")
 	window.get(url, function(res){
 		window.curState = JSON.parse(res)
 		window.entityMap = {}

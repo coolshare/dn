@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
 import CustomDiagram from './CustomDiagram';
 import Reader from './Views/Reader'
+import Login from './Views/Login'
+import StoryDefine from './Views/StoryDefine'
+import Register from './Views/Register'
 import Dialog from './Views/Dialog'
 import Tab from './Components/Tab'
 import $ from 'jquery';
 import './css/Reader.css'
+import bg from "./images/bbb.gif"
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 
@@ -16,11 +20,31 @@ library.add(faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUse
 var beforeNavigatedAway = function () {
 	//saveStory()
 };
-
+window.homeUrl = "http://73.71.159.185:12345"
+window.userPath = "./db/dn/user/"
+window.storyPath = encodeURIComponent("./db/dn/stories/")
 window.addEventListener('beforeunload', beforeNavigatedAway, false);
 window.addEventListener('unload', beforeNavigatedAway, false);
 window.storyId = "StoryA"
 
+window.addEventListener("click", function(e) {
+	if (e.target===window.app.dropdown) {
+		return
+	}
+	window.showDD.call(window.app)
+})
+
+window.loadUser = function () {
+	var url = window.homeUrl+"?filePath="+window.userPath+"&fileName=users.txt"
+	window.get(url, function(res){
+		window.users = res
+		window.userMap = {}
+		for (var i=0; i<window.users.length; i++) {
+			var item = window.users[i]
+			window.userMap[item.id] = item
+		}
+	})
+}
 
 window.saveStory = function(storyId) {
 	
@@ -28,9 +52,9 @@ window.saveStory = function(storyId) {
 	var data = {
 			fileName:storyId+".txt",
 			filePath:"./temp/Stories/",
-			fileContent:JSON.stringify(window.curState)
+			content:JSON.stringify(window.curState)
 	}
-	post( "http://73.71.159.185:12345", data);
+	window.post( window.homeUrl+"/save", data);
 	
 }
 
@@ -82,7 +106,13 @@ window.openFile = function(func) {
 	window.clickElem(fileInput)
 }
 
-
+window.initServer = function(response) {
+	window.post( window.homeUrl+"/mkdir", {filePath:["./db", "./db/dn", "./db/dn/stories", "./db/dn/user"]}, function() {
+		if (response) {
+			response()
+		}
+	})
+}
 window.createStory = function (storyId) {
 	window.app.showDialog(window.app.createStoryContent(), {top:"10px", width:"920px", height:"650px", title:"Create a Story", hideX:true, handleOK:function() {
 		debugger
@@ -92,13 +122,31 @@ window.createStory = function (storyId) {
 	var data = {
 			fileName:storyId+".txt",
 			filePath:"./temp/Stories/",
-			fileContent:JSON.stringify(window.curState)
+			content:JSON.stringify(window.curState)
 	}
-	post( "http://73.71.159.185:12345", data);
+	window.post( window.homeUrl+"/save", data);
 	window.location.reload()
 }
+window.showDD = function(show){
+	var dd = this.dd
+	if (dd===undefined) {
+		return
+	}
+	if (show) {
+		var r = this.dropdown.getBoundingClientRect()
+		
+		dd.style.top = r.top+r.height +"px"
+		dd.style.left = (r.left+50)+"px"
+		dd.style.width = dd.style.width|| (r.width +"px")
+	}
+			
+	if (dd) {
+		dd.style.display = show===true?"block":"none"
+	}
+}
 
-function post(url, data){
+
+window.post = function(url, data, response){
 	let self = this;
 
 	var ttt = {
@@ -108,11 +156,20 @@ function post(url, data){
 			  data:JSON.stringify(data),
 			  dataType:"json",
 			  success: function(res, textStatus, xhr){
-				  debugger
+				  if (response) {
+					  response(res)
+				  }
 			  }}
 	$.ajax(ttt
-		).fail(function(response) {			
-			console.log('Error');
+		).fail(function(res2) {	
+			if (res2.statusText==="OK") {
+				if (response) {
+					  response(res2)
+				  }
+			} else {
+				console.log('Error');
+			}
+			
 		});
 
 }
@@ -120,8 +177,18 @@ function post(url, data){
 class App extends Component {
   constructor(props) {
 	  super(props)
-	  this.state = {topView:"FlowDesign"}
+	  this.state = {topView:"Login"}
 	  window.app = this
+  }
+  
+  componentDidMount() {
+	  window.initServer(function() {
+		  window.post( window.homeUrl+"/create", {filePath:"./db/dn/user", fileName:"users.txt", "content":[]}, function() {
+	  
+			  window.loadUser()
+		  })
+	  })
+	  
   }
   findAStory(entityMap) {
 		return this.findNextSection(entityMap, entityMap["_start_"], [])
@@ -227,7 +294,7 @@ class App extends Component {
 	  	</div>
 	  </div>
   }
-  
+
   render() {
 	  var tabProps = {
 	    		"stlyle":{"height":"100%"},
@@ -261,32 +328,47 @@ class App extends Component {
                  ]}
 	  
     return (
-      <div className="App">
-      	{ 
-      		this.state.Dialog && <Dialog options={this.state.Dialog.options}>{this.state.Dialog.content}</Dialog>
-      	}      	
-        {
-        	this.state.topView!=="Editor" && 
-        	<header className="App-header">
-          		<h3 className="App-title">Welcome to Store Builder</h3>
-          		<div>
-          			<button onClick={e=>{window.saveToDisk(window.storyId)}} style={{marginLeft:"20px", marginRight:"20px"}}>Save Story</button>
-          			<button onClick={e=>{window.openFile(window.dispFile)}} style={{marginLeft:"20px", marginRight:"20px"}}>Load Story</button>
-          			<button onClick={e=>{window.createStory(window.storyId)}} style={{marginLeft:"20px", marginRight:"20px"}}>New Story</button></div>
-          	</header>
+      <div className="App" style={{height:"100vh", backgroundImage: `url(${bg})`}}>
+      	{this.state.topView!=="Login"&&this.state.topView!=="Register" &&this.state.topView!=="StoryDefine" &&
+	    	  <div>
+		      	{ 
+		      		this.state.Dialog && <Dialog options={this.state.Dialog.options}>{this.state.Dialog.content}</Dialog>
+		      	}      	
+		
+		    	<h3 className="App-title">Welcome to Store Builder</h3>
+		    	<div><div ref={(node)=>{this.dropdown=node}} style={{cursor:"pointer", textAlign:"center", paddingLeft:"25px", paddingRight:"25px", width:"30px", background:"#ccc", border: "solid 1px #000"}} onClick={e=>{window.showDD.call(this, true)}}>File</div>
+			    {
+			    	<div className="shadow" style={{display:"none", position:"fixed", width:"100px", zIndex:104, background:"#EEE", padding:"10px", borderRadius:"2px", boxShadow:"rgba(0, 0, 0, 0.5) 5px 5px 15px 0px"}} ref={(node)=>{this.dd = node}} >												
+						 <div className="FlatItem"  onClick={e=>{window.createStory(window.storyId)}}><span style={{padding:"7px"}}>New</span></div>
+						 <div className="FlatItem"  onClick={e=>{window.openFile(window.dispFile)}}><span style={{padding:"7px"}}>Load</span></div>
+						 <div className="FlatItem" onClick={e=>{window.saveToDisk(window.storyId)}}><span style={{padding:"7px"}}>Save</span></div>
+					</div>
+			    }
+			   </div>
+		
+		        {
+		        	this.state.topView!=="Editor" && 
+		          	<Tab {...tabProps}/>
+		        }
+		        {
+		          	this.state.topView==="FlowDesign"&&
+		          	<main className="main">
+		          		<CustomDiagram  ref={(node)=>{this.customDiagram = node}}/>
+		            </main>
+		        }
+		        {
+		        	this.state.topView==="StoryReader"&&<Reader/>
+		        }
+		    </div>
+		}
+		{
+        	this.state.topView==="Login"&&<Login/>
         }
-        {
-        	this.state.topView!=="Editor" && 
-          	<Tab {...tabProps}/>
+    	{
+        	this.state.topView==="Register"&&<Register/>
         }
-        {
-          	this.state.topView==="FlowDesign"&&
-          	<main className="main">
-          		<CustomDiagram  ref={(node)=>{this.customDiagram = node}}/>
-            </main>
-        }
-        {
-        	this.state.topView==="StoryReader"&&<Reader app={this}/>
+    	{
+        	this.state.topView==="StoryDefine"&&<StoryDefine/>
         }
       </div>
     );
