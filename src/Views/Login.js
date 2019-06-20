@@ -20,7 +20,16 @@ export default class Login extends Component {
 		var password = this.password.value
 		var u = window.userMap[user]
 		if (u!==undefined && u.password===password) {
-			window.app.switchView("MainView")
+			window.curUser = {user:user, storyMap:{}}
+			window.post( window.homeUrl+"/mkdir", {filePath:["./db/dn/stories/"+window.curUser.user]}, function() {
+				  
+				window.loadStories(function(){
+					window.app.switchView("MainView")
+				})
+				  
+			})
+			
+			
 		} else {
 			if (u===undefined) {
 				alert("Wrong user name")

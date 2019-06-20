@@ -21,8 +21,12 @@ export default class StoryDefine extends Component {
 			return
 		}
 		window.curStory = res
-		window.curStory.sections = [{"id":"_start_","type":"Paragraph","width":40,"height":40,"x":95,"y":94,"name":"StartPoint"}]
+		var firstSection = {"id":"_start_","type":"Paragraph","width":60,"height":50,"x":95,"y":94,"name":"Start Point"}
+		window.curStory.sections = [firstSection]
 		window.curStory.id = "ID"+new Date().valueOf()
+		window.entityMap = {}
+		window.entityMap[firstSection.id] = firstSection
+		window.curUser.storyMap[window.curStory.id] = window.curStory
 	}
 	render() {
 		var self = this

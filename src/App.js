@@ -4,6 +4,7 @@ import Reader from './Views/Reader'
 import Login from './Views/Login'
 import StoryDefine from './Views/StoryDefine'
 import Register from './Views/Register'
+import Introduction from './Views/Introduction'
 import Dialog from './Views/Dialog'
 import Tab from './Components/Tab'
 import $ from 'jquery';
@@ -18,14 +19,13 @@ library.add(faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUse
 	faDownload, faSignal, faArrowUp,  faSync, faCaretDown, faWindowClose, faTimes);
 
 var beforeNavigatedAway = function () {
-	//saveStory()
+	//window.saveStories()
 };
 window.homeUrl = "http://73.71.159.185:12345"
 window.userPath = "./db/dn/user/"
-window.storyPath = encodeURIComponent("./db/dn/stories/")
+window.storyPath = "./db/dn/stories/"
 window.addEventListener('beforeunload', beforeNavigatedAway, false);
 window.addEventListener('unload', beforeNavigatedAway, false);
-window.storyId = "StoryA"
 
 window.addEventListener("click", function(e) {
 	if (e.target===window.app.dropdown) {
@@ -46,13 +46,16 @@ window.loadUsers = function () {
 	})
 }
 
-window.saveStory = function(storyId) {
-	
-	storyId = storyId||window.curStory
+window.saveStories = function() {
+	for (var i in window.curUser.storyMap) {
+		window.saveStory(window.curUser.storyMap[i])
+	}
+}
+window.saveStory = function(story) {
 	var data = {
-			fileName:storyId+".txt",
-			filePath:"./temp/Stories/",
-			content:window.curStory
+			fileName:story.id+".txt",
+			filePath:window.storyPath+window.curUser.user,
+			content:story
 	}
 	window.post( window.homeUrl+"/save", data);
 	
@@ -74,9 +77,9 @@ window.dispFile = function(contents) {
 		var item = window.curStory.sections[i]
 		window.entityMap[item.id] = item
 	}
-	setTimeout(function() {
-		window.app.references.CustomDiagram.refresh()
-	}, 100)
+	
+	window.app.refresh()
+
 }
 window.clickElem = function(elem) {
 	// Thx user1601638 on Stack Overflow (6/6/2018 - https://stackoverflow.com/questions/13405129/javascript-create-and-save-file )
@@ -139,6 +142,15 @@ window.showDD = function(show){
 	}
 }
 
+window.loadStories = function(response) {
+	var url = window.homeUrl+"/dir?filePath=./db/dn/stories/"+window.curUser.user
+	window.get(url, function(res){
+		window.curUser.storyMap = res
+		if (response) {
+			response(res)
+		}
+	})
+}
 
 window.post = function(url, data, response){
 	let self = this;
@@ -181,6 +193,7 @@ class App extends Component {
 		  window.post( window.homeUrl+"/create", {filePath:"./db/dn/user", fileName:"users.txt", "content":[]}, function() {
 	  
 			  window.loadUsers()
+			  
 		  })
 	  })
 	  
@@ -220,7 +233,7 @@ class App extends Component {
   }
   
   handleTitleChange() {
-	  window.app.okButton.disabled = this.titleInput.value.trim()===""
+	  window.app.references.Dialog.okButton.disabled = this.titleInput.value.trim()===""
   }
   showBranchingLogic(node){
 	  var selections = []
@@ -261,7 +274,21 @@ class App extends Component {
 	  	
 	  </div>
   }
-  
+  handleStorySelect(e) {
+	  var id = e.target.value
+	  if (id==="") {
+		  window.curStory = undefined
+		  this.refresh()
+		  return
+	  }
+	  window.curStory = window.curUser.storyMap[id]
+	  window.entityMap = {}
+		for (var i=0; i<window.curStory.sections.length; i++) {
+			var item = window.curStory.sections[i]
+			window.entityMap[item.id] = item
+		}
+	  this.refresh()
+  }
   createStoryContent() {
 	  return <div >
 	  	<div style={{marginBottom:"5px"}}><div style={{display:"inline-block", width:"100px", paddingLeft:"7px", paddingRight:"7px"}}>Title</div><input style={{width:"300px"}} ref={(node)=>{this.titleInput = node}} defaultValue={"Paragraph_"+new Date().valueOf()} onChange={(e)=>{window.app.handleTitleChange.call(this)}}/></div>
@@ -330,15 +357,30 @@ class App extends Component {
 		      	    	
 		
 		    	<h3 className="App-title">Welcome to Store Builder</h3>
-		    	<div style={{marginLeft:"20px"}}><div ref={(node)=>{self.dropdown=node}} style={{cursor:"pointer", textAlign:"center", paddingLeft:"25px", paddingRight:"25px", width:"30px", background:"#ccc", border: "solid 1px #000"}} onClick={e=>{window.showDD.call(self, true)}}>File</div>
-			    {
-			    	<div className="shadow" style={{display:"none", position:"fixed", width:"100px", zIndex:104, background:"#EEE", padding:"10px", borderRadius:"2px", boxShadow:"rgba(0, 0, 0, 0.5) 5px 5px 15px 0px"}} ref={(node)=>{self.dd = node}} >												
-						 <div className="FlatItem"  onClick={e=>{window.createStory()}}><span style={{padding:"7px"}}>New</span></div>
-						 <div className="FlatItem"  onClick={e=>{window.openFile(window.dispFile)}}><span style={{padding:"7px"}}>Load</span></div>
-						 <div className="FlatItem" onClick={e=>{window.saveToDisk()}}><span style={{padding:"7px"}}>Save</span></div>
+		    	<div style={{marginLeft:"20px"}}>
+		    		<div ref={(node)=>{self.dropdown=node}} style={{display:"inline-block", cursor:"pointer", textAlign:"center", paddingLeft:"25px", paddingRight:"25px", width:"30px", background:"#ccc", border: "solid 1px #000"}} onClick={e=>{window.showDD.call(self, true)}}>File</div>
+				    {
+				    	<div className="shadow" style={{display:"none", position:"fixed", width:"200px", zIndex:104, background:"#EEE", padding:"10px", borderRadius:"2px", boxShadow:"rgba(0, 0, 0, 0.5) 5px 5px 15px 0px"}} ref={(node)=>{self.dd = node}} >												
+							 <div className="FlatItem"  onClick={e=>{window.createStory()}}><span style={{padding:"7px"}}>New</span></div>
+							 <div className="FlatItem"  onClick={e=>{window.openFile(window.dispFile)}}><span style={{padding:"7px"}}>Load</span></div>
+							 <div className="FlatItem" onClick={e=>{window.saveStories()}}><span style={{padding:"7px"}}>Update Server</span></div>
+							 <div className="FlatItem" onClick={e=>{window.saveToDisk()}}><span style={{padding:"7px"}}>Save</span></div>
+						</div>
+				    }
+					<div style={{display:"inline-block", marginLeft:"10px"}}>
+						<span>Stories:</span>
+						<select style={{width:"200px"}} onChange={e=>{this.handleStorySelect(e)}}><option value=""></option>
+							{
+								Object.keys(window.curUser.storyMap).map((key, idx)=>{
+									let story = window.curUser.storyMap[key]
+								
+									return <option value={story.id}>{story.name}</option>
+								})
+								
+							}
+						</select>
 					</div>
-			    }
-			   </div>
+				</div>
 		        {
 		        	self.state.topTabView==="FlowDesign"&&  window.curStory!==undefined &&
 		          	<main className="main"   ref={(node)=>{self.references.main = node}}>
@@ -347,6 +389,9 @@ class App extends Component {
 		        }
 		        {
 		        	self.state.topTabView==="StoryReader"&& window.curStory!==undefined && <Reader  ref={(node)=>{self.references.Reader = node}}/>
+		        }
+	        	{
+		        	window.curStory===undefined && <Introduction  ref={(node)=>{self.references.Introduction = node}}/>
 		        }
 		    </div>
 		}
