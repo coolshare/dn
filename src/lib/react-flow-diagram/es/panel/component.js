@@ -43,6 +43,9 @@ var Panel = function Panel(props) {
       PanelTools,
       null,
       props.entityTypeNames.map(function (entityTypeName) {
+    	if (entityTypeName==="BranchingLogic") {
+    		return null
+    	}
         return React.createElement(
           PanelTool,
           {
@@ -95,8 +98,10 @@ var PanelContainer = function (_React$PureComponent) {
 
     return _ret = (_temp = (_this = _possibleConstructorReturn(this, _React$PureComponent.call.apply(_React$PureComponent, [this].concat(args))), _this), _this.entityTypeNames = Object.keys(_this.props.entityTypes), _this.minToolSize = 40, _this.niceToolSize = 50, _this.addEntityHelper = function () {
       var entityType = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 'Task';
-
-      _this.props.addEntity(_this.props.defaultEntity({ entityType: entityType }));
+      if (entityType!=="BranchingLogic") {
+    	  _this.props.addEntity(_this.props.defaultEntity({ entityType: entityType }));
+      }
+      
     }, _this.toolWidth = function () {
       if (typeof _this.props.gridSize === 'number') {
         var _gridSize = _this.props.gridSize;

@@ -5,6 +5,7 @@ import { move, linkTo, addLinkedEntity, removeEntity, selectEntity } from './red
 import { connecting, anchorEntity } from '../canvas/reducer';
 import defaultEntity from './defaultEntity';
 import ContextMenu from '../contextMenu/component';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 var _templateObject = _taggedTemplateLiteralLoose(['\n  position: absolute;\n  top: 0;\n  left: 0;\n  text-align: center;\n  display: flex;\n  flex-flow: row nowrap;\n  align-items: center;\n  user-select: none;\n'], ['\n  position: absolute;\n  top: 0;\n  left: 0;\n  text-align: center;\n  display: flex;\n  flex-flow: row nowrap;\n  align-items: center;\n  user-select: none;\n']);
 
@@ -52,20 +53,7 @@ var contextMenuActions = function contextMenuActions(props) {
     				return
     			}
 
-    			window.app.showDialog(window.app.handleBranchingLogic(), {title:"Create "+entityTypeName, hideX:true, height:"400px", handleOK:function() {
-    				var branchingLogic = {question:window.app.questionInput.value.trim(), selections:[]}
-    				for (var i=0; i<4; i++) {
-    					var item = window.app["selectionInput_"+i].value.trim()
-    					if (item==="") {
-    						branchingLogic.selections.push({})
-    					} else {
-    						branchingLogic.selections.push({selection:item, branch:window.app["branchSelect_"+i].value})
-    					}
-    					
-    				}
-    				window.app.selectedEnity.branchingLogic = branchingLogic
-        		
-        	}})
+    			window.popupBranchingLogic()
         	
     	} else {
     		window.app.showDialog(window.app.createParagraph(), {top:"10px", width:"920px", height:"650px", title:"Create "+entityTypeName, hideX:true, handleOK:function() {
@@ -98,7 +86,9 @@ var contextMenuActions = function contextMenuActions(props) {
 var EntityStyle = style.div(_templateObject);
 
 var Entity = function Entity(props) {
-  return React.createElement(
+	var ch = props.model.branchingLogic?(<div><a href="javascript:void()" onClick={e=>{window.popupBranchingLogic()}} style={{position:"absolute", top:"5px", left:"5px"}}><FontAwesomeIcon icon="code-branch"/></a>{props.children}</div>):props.children
+	
+	return React.createElement(
     EntityStyle,
     {
       style: {
@@ -115,7 +105,7 @@ var Entity = function Entity(props) {
         onMouseUp: props.onMouseUp,
         role: 'presentation'
       },
-      props.children
+      ch
     ),
     props.isSelected && React.createElement(ContextMenu, { actions: contextMenuActions(props) })
   );

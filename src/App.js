@@ -13,9 +13,9 @@ import bg from "./images/bbb.gif"
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 
-import {faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
+import {faCodeBranch, faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
 	faDownload, faSignal, faArrowUp, faSync, faCaretDown, faWindowClose, faTimes } from '@fortawesome/free-solid-svg-icons';
-library.add(faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
+library.add(faCodeBranch, faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
 	faDownload, faSignal, faArrowUp,  faSync, faCaretDown, faWindowClose, faTimes);
 
 var beforeNavigatedAway = function () {
@@ -150,6 +150,23 @@ window.loadStories = function(response) {
 			response(res)
 		}
 	})
+}
+
+window.popupBranchingLogic = function() {
+	window.app.showDialog(window.app.handleBranchingLogic(), {title:"Create BranchingLogic", hideX:true, height:"400px", handleOK:function() {
+		var branchingLogic = {question:window.app.questionInput.value.trim(), selections:[]}
+		for (var i=0; i<4; i++) {
+			var item = window.app["selectionInput_"+i].value.trim()
+			if (item==="") {
+				branchingLogic.selections.push({})
+			} else {
+				branchingLogic.selections.push({selection:item, branch:window.app["branchSelect_"+i].value})
+			}
+			
+		}
+		window.app.selectedEnity.branchingLogic = branchingLogic
+	
+	}})
 }
 
 window.post = function(url, data, response){
