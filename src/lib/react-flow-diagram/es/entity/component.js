@@ -27,7 +27,7 @@ function _taggedTemplateLiteralLoose(strings, raw) { strings.raw = raw; return s
  * ==================================== */
 
 var contextMenuActions = function contextMenuActions(props) {
-  window.app.selectedEntity = window.entityMap[props.model.id]
+  //window.app.selectedEntity = window.entityMap[props.model.id]
   var remove = {
     action: function action() {
       return props.removeEntity(props.model.id);
@@ -90,7 +90,7 @@ var Entity = function Entity(props) {
 	if (props.model.branchingLogic) {
 		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{cursor:"pointer", position:"absolute", top:"5px", left:"5px"}}><FontAwesomeIcon icon="code-branch"/></span>)
 	}
-	ch = <div>{ch}{props.children}</div>
+	ch = <div >{ch}{props.children}</div>
 	
 	return React.createElement(
     EntityStyle,
@@ -104,6 +104,7 @@ var Entity = function Entity(props) {
     React.createElement(
       'div',
       {
+    	id: props.model.id,
         onMouseDown: props.onMouseDown,
         onMouseLeave: props.onMouseLeave,
         onMouseUp: props.onMouseUp,
@@ -206,6 +207,13 @@ var EntityContainerHOC = function EntityContainerHOC(WrappedComponent) {
         }
       }, _this.onMouseUp = function (ev) {
         ev.stopPropagation();
+        window.app.selectedEntity = window.entityMap[ev.currentTarget.id]
+        if (window.app.selectedEntity) {
+        	var r = ev.currentTarget.getBoundingClientRect()
+        	window.app.selectedEntity.x = Math.round(r.left)
+        	window.app.selectedEntity.y = Math.round(r.top)
+        }
+        
         if (!_this.state.onMouseUpWouldBeClick) {
           // Behaves as if it was spawned with a mouse drag
           // meaning that when you release the mouse button,
