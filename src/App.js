@@ -28,12 +28,15 @@ window.addEventListener('beforeunload', beforeNavigatedAway, false);
 window.addEventListener('unload', beforeNavigatedAway, false);
 
 window.addEventListener("click", function(e) {
-	if (e.target===window.app.dropdown) {
+	if (e.target===window.app.dropdown || e.target===window.app.references.contextMenu) {
 		return
 	}
 	window.showDD.call(window.app)
+	window.app.references.contextMenu.style.display = "none"
 })
-
+window.addEventListener("resize", function(e) {
+	window.app.refresh()
+})
 window.loadUsers = function () {
 	var url = window.homeUrl+"?filePath="+window.userPath+"&fileName=users.txt"
 	window.get(url, function(res){
@@ -61,22 +64,17 @@ window.saveStory = function(story) {
 	
 }
 
-window.saveToDisk = function() {
+window.exportUser = function() {
 	var FileSaver = require('file-saver');
-	var blob = new Blob([JSON.stringify(window.curStory)], {type: "text/plain;charset=utf-8"});
-	FileSaver.saveAs(blob, window.curStory.name+".txt");
+	var blob = new Blob([JSON.stringify(window.curUser)], {type: "text/plain;charset=utf-8"});
+	FileSaver.saveAs(blob, window.curUser.user+".txt");
 
 	
 }
 
 
 window.dispFile = function(contents) {
-	window.curStory = JSON.parse(contents)
-	window.entityMap = {}
-	for (var i=0; i<window.curStory.sections.length; i++) {
-		var item = window.curStory.sections[i]
-		window.entityMap[item.id] = item
-	}
+	window.curUser = JSON.parse(contents)
 	
 	window.app.refresh()
 
@@ -189,7 +187,7 @@ window.popupBranchingLogic = function() {
 			}
 			
 		}
-		window.app.selectedEnity.branchingLogic = branchingLogic
+		window.app.selectedEntity.branchingLogic = branchingLogic
 	
 	}})
 }
@@ -220,6 +218,56 @@ window.post = function(url, data, response){
 			
 		});
 
+}
+window.deleteEntity = function() {
+	var entity = window.app.selectedEntity
+	var list = window.curStory.sections
+	var res = []
+	for (var i=0; i<list.length; i++) {
+		var item = list[i];
+		if (item.id===entity.id) {
+			continue
+		}
+		if (item.linksTo) {
+			var rr = []
+			for (var j=0; j<item.linksTo.length; j++) {
+				var link = item.linksTo[j]
+				if (link.target===entity.id) {
+					continue
+				}
+				rr.push(link)
+			}
+			item.linksTo = rr
+		}
+		
+		res.push(item)
+	}
+	window.curStory.sections = res
+	delete window.entityMap[entity.id]
+	window.app.refresh()
+}
+
+window.showConextMenu = function(e) {
+	var menu = window.app.references.contextMenu
+	var c = e.target
+	
+	var r = c.getBoundingClientRect()
+	menu.style.top = (r.top+20)+"px"
+	menu.style.left = (r.left+r.width)+"px"
+	menu.style.display = "block"
+}
+
+window.openEditParagraphDlg = function(id) {
+	id = id||window.app.selectedEntity.id
+	var entity = window.entityMap[id]
+	  window.app.showDialog(window.app.editParagraph(entity), {top:"10px", width:"920px", height:"650px",title:"Edit "+entity.name, hideX:true, handleOK:function() {
+		
+		entity.name = window.app.titleInput.value
+		entity.content1 = window.app.contentTextarea1.value
+		entity.content2 = window.app.contentTextarea2.value
+		window.saveStory()
+		window.location.reload()
+	}})
 }
 
 class App extends Component {
@@ -258,6 +306,9 @@ class App extends Component {
 	}
   refresh() {
 	  this.setState({refresh:this.state.refresh!==true?true:false})
+	  if (window.app.references.CustomDiagram) {
+		  window.app.references.CustomDiagram.refresh()
+	  }
   }
   showDialog(content, options={}) {
 	  var d = undefined
@@ -294,7 +345,7 @@ class App extends Component {
   }
   
   handleBranchingLogic() {
-	  var node = window.app.selectedEnity
+	  var node = window.app.selectedEntity
 	  var selections = []
 	  var dd = ["A", "B", "C", "D"]
 	  for (let i=0; i<4; i++) {
@@ -329,7 +380,9 @@ class App extends Component {
 			var item = window.curStory.sections[i]
 			window.entityMap[item.id] = item
 		}
-	  this.refresh()
+	  window.app.refresh()
+	  
+	  
   }
   createStoryContent() {
 	  return <div >
@@ -359,6 +412,7 @@ class App extends Component {
 	  </div>
   }
 
+  
   render() {
 	  var self = this
 	  var tabProps = {
@@ -393,7 +447,7 @@ class App extends Component {
                  ]}
 	  
     return (
-      <div className="App" style={{height:"100vh", backgroundImage: `url(${bg})`}}>
+      <div className="App" style={{padding:"10px", height:"100vh", backgroundImage: `url(${bg})`}}>
       	{self.state.topView==="MainView" &&
 	    	  <div>
 		      	    	
@@ -408,7 +462,7 @@ class App extends Component {
 							 <div className="FlatItem" onClick={e=>{window.deleteStory()}}><span style={{padding:"7px", color:window.curStory?"#000":"#999"}}>Delete</span></div>
 							 <hr/>
 							 <div className="FlatItem"  onClick={e=>{window.openFile(window.dispFile)}}><span style={{padding:"7px"}}>Import</span></div>
-							 <div className="FlatItem" onClick={e=>{window.saveToDisk()}}><span style={{padding:"7px"}}>Export</span></div>
+							 <div className="FlatItem" onClick={e=>{window.exportUser()}}><span style={{padding:"7px"}}>Export</span></div>
 						</div>
 				    }
 					<div style={{display:"inline-block", marginLeft:"10px"}}>
@@ -427,7 +481,7 @@ class App extends Component {
 				</div>
 		        {
 		        	self.state.topTabView==="FlowDesign"&&  window.curStory!==undefined &&
-		          	<main className="main"   ref={(node)=>{self.references.main = node}}>
+		          	<main className="main"   ref={(node)=>{self.references.main = node}} style={{borderRadius:"10px", margin:"10px", height:"700px"}}>
 		          		<CustomDiagram ref={(node)=>{self.references.CustomDiagram = node}}/>
 		            </main>
 		        }
@@ -448,6 +502,10 @@ class App extends Component {
     	{ 
       		self.state.Dialog && <Dialog ref={(node)=>{self.references.Dialog = node}} options={self.state.Dialog.options}>{self.state.Dialog.content}</Dialog>
       	}  
+    	<div className="shadow" style={{display:"none", position:"fixed", width:"200px", zIndex:104, background:"#EEE", padding:"10px", borderRadius:"2px", boxShadow:"rgba(0, 0, 0, 0.5) 5px 5px 15px 0px"}} ref={(node)=>{window.app.references.contextMenu = node}} >																		 
+			 <div className="FlatItem" onClick={e=>{window.openEditParagraphDlg()}}><span style={{padding:"7px"}}>Edit</span></div>
+			 <div className="FlatItem" onClick={e=>{window.deleteEntity()}}><span style={{padding:"7px", color:window.curStory?"#000":"#999"}}>Delete</span></div>
+		</div>
       </div>
     );
   }

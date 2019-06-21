@@ -27,7 +27,7 @@ function _taggedTemplateLiteralLoose(strings, raw) { strings.raw = raw; return s
  * ==================================== */
 
 var contextMenuActions = function contextMenuActions(props) {
-  window.app.selectedEnity = window.entityMap[props.model.id]
+  window.app.selectedEntity = window.entityMap[props.model.id]
   var remove = {
     action: function action() {
       return props.removeEntity(props.model.id);
@@ -48,7 +48,7 @@ var contextMenuActions = function contextMenuActions(props) {
     return {
       action: function action() {
     	if (entityTypeName==="BranchingLogic") {
-    			if (window.app.selectedEnity.linksTo===undefined) {
+    			if (window.app.selectedEntity.linksTo===undefined) {
     				window.alertBox("Branching logic only available for Paragraphs with more than one branches.")
     				return
     			}
@@ -86,9 +86,9 @@ var contextMenuActions = function contextMenuActions(props) {
 var EntityStyle = style.div(_templateObject);
 
 var Entity = function Entity(props) {
-	var ch = [<span onClick={e=>{window.popupBranchingLogic()}} style={{position:"absolute", top:"5px", left:(props.model.width-20)+"px"}}><FontAwesomeIcon icon="pen"/></span>]
+	var ch = []
 	if (props.model.branchingLogic) {
-		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{position:"absolute", top:"5px", left:"5px"}}><FontAwesomeIcon icon="code-branch"/></span>)
+		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{cursor:"pointer", position:"absolute", top:"5px", left:"5px"}}><FontAwesomeIcon icon="code-branch"/></span>)
 	}
 	ch = <div>{ch}{props.children}</div>
 	
@@ -107,6 +107,8 @@ var Entity = function Entity(props) {
         onMouseDown: props.onMouseDown,
         onMouseLeave: props.onMouseLeave,
         onMouseUp: props.onMouseUp,
+        //onClick:function() {alert("sss")},
+        onContextMenu: function(e) {window.showConextMenu(e);e.preventDefault();},
         role: 'presentation'
       },
       ch

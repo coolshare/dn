@@ -104,15 +104,7 @@ class ParagraphComponent extends React.PureComponent<
   };
 
   toggleEdit = (isEditing: boolean, id) => {
-	  var entity = window.entityMap[id]
-	  window.app.showDialog(window.app.editParagraph(entity), {top:"10px", width:"920px", height:"650px",title:"Edit "+entity.name, hideX:true, handleOK:function() {
-  		
-  		entity.name = window.app.titleInput.value
-  		entity.content1 = window.app.contentTextarea1.value
-  		entity.content2 = window.app.contentTextarea2.value
-  		window.saveStory()
-  		window.location.reload()
-  	}})
+	  window.openParagraphDlg(id)
 	 // window.app.switchView("Editor", this)
     /*const { textarea } = this;
     if (isEditing && textarea) {
