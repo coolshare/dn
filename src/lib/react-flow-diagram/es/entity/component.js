@@ -90,7 +90,7 @@ var Entity = function Entity(props) {
 		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{cursor:"pointer", position:"absolute", top:"5px", left:"5px"}}><FontAwesomeIcon icon="code-branch"/></span>)
 	}
 	if (props.model.expose===1) {
-		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{cursor:"pointer", position:"absolute", top:"5px", left:"25px"}}><FontAwesomeIcon icon="file-export"/></span>)
+		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{cursor:"pointer", position:"absolute", top:"5px", left:"25px", fontSize:"9px"}}><FontAwesomeIcon icon="file-export"/></span>)
 	}
 	ch = <div >{ch}{props.children}</div>
 	

@@ -18,7 +18,7 @@ export default class Login extends Component {
 		var password = this.password.value
 		var u = window.userMap[user]
 		if (u!==undefined && u.password===password) {
-			window.getUserId = user
+			window.setCurUser(user)
 			window.addUser({user:user, storyMap:{}})
 			window.post( window.homeUrl+"/mkdir", {filePath:["./db/dn/stories/"+window.getUser().user]}, function() {
 				  
@@ -52,7 +52,7 @@ export default class Login extends Component {
 		return (
 			<div  style={{height:"100%", display:"flex", justifyContent:"center",backgroundImage: `url(${bg})`}}>
 				<div style={{display:"flex", justifyContent:"center", flexDirection:"column"}}>
-			    	<h3>Welcome to Store Builder</h3>
+			    	<h3>Welcome to Story Builder</h3>
 			    	<h5>Login</h5>
 			    	<div >												
 						 <div><input style={{margin:"7px"}} ref={(node)=>{this.userName=node}} placeholder="User Name"/></div>

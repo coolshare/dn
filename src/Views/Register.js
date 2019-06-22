@@ -36,7 +36,7 @@ export default class Register extends Component {
 		return (
 				<div  style={{height:"100%", display:"flex", justifyContent:"center",backgroundImage: `url(${bg})`}}>
 					<div style={{display:"flex", justifyContent:"center", flexDirection:"column"}}>
-					<h3>Welcome to Store Builder</h3>
+					<h3>Welcome to Story Builder</h3>
 			    	<h5>Sign up</h5>
 			    	<div >												
 						 <div><input style={{margin:"7px"}} ref={(node)=>{this.userName=node}} placeholder="User Name"/></div>

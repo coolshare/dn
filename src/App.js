@@ -159,7 +159,7 @@ window.exposeParagraph = function(e, level=1) {
 }
 window.linkParagraph = function(e, fromContextMenu) {
 	e.preventDefault();
-	window.app.showDialog(<LinkParagraphView fromContextMenu={fromContextMenu}/>, {title:"Link Paragraph to Others", hideX:true, top:"10px", left:"10px", width:"1000px", height:"600px", handleOK:function() {
+	window.app.showDialog(<LinkParagraphView fromContextMenu={fromContextMenu}/>, {title:"Link Paragraph to Other Stories", hideX:true,  width:"1000px", height:"360px", handleOK:function() {
 		
 	
 	}})
@@ -260,9 +260,9 @@ window.showConextMenu = function(e) {
 	menu.style.display = "block"
 }
 
-window.openEditParagraphDlg = function(id) {
+window.openEditParagraphDlg = function(e, id) {
 	id = id||window.getEntity().id
-	var entity = window.getStory()[id]
+	var entity = window.getEntity(id)
 	  window.app.showDialog(window.app.editParagraph(entity), {top:"10px", width:"920px", height:"650px",title:"Edit "+entity.name, hideX:true, handleOK:function() {
 		
 		entity.name = window.app.titleInput.value
@@ -279,7 +279,7 @@ window.openEditParagraphDlg = function(id) {
 /// Story
 window.getStory = function(sId, uId) {
 	sId = sId||window.curStoryId
-	uId = uId||window.getUserId
+	uId = uId||window.curUserId
 	var u = window.getUser(uId)
 	if (u) {
 		return u.storyMap[sId]
@@ -305,7 +305,7 @@ window.removeStory = function(id) {
 window.getEntity = function(eId, sId, uId) {
 	eId = eId||window.curEntityId
 	sId = sId||window.curStoryId
-	uId = uId||window.getUserId
+	uId = uId||window.curUserId
 	var u = window.getUser()
 	if (u) {
 		var s = u.storyMap[sId]
@@ -327,24 +327,27 @@ window.addEnity = function(e) {
 
 window.removeEnity = function(e, id) {
 	e.preventDefault();
-	var entity = id?window.getEntity(id):window.getEntity()
-	var s = window.getStory()
-	delete s.entityMap[id]
-	for (var i in s.entityMap) {
-		var item = s.entityMap[i];
-		if (item.linksTo) {
-			var rr = []
-			for (var j=0; j<item.linksTo.length; j++) {
-				var link = item.linksTo[j]
-				if (link.target===entity.id) {
-					continue
+	window.confirmBox("Are you sure to delete "+window.getEntity(id).name+"?", "Delete a Paragram", function() {
+		var entity = id?window.getEntity(id):window.getEntity()
+				var s = window.getStory()
+				delete s.entityMap[id]
+				for (var i in s.entityMap) {
+					var item = s.entityMap[i];
+					if (item.linksTo) {
+						var rr = []
+						for (var j=0; j<item.linksTo.length; j++) {
+							var link = item.linksTo[j]
+							if (link.target===entity.id) {
+								continue
+							}
+							rr.push(link)
+						}
+						item.linksTo = rr
+					}
 				}
-				rr.push(link)
-			}
-			item.linksTo = rr
-		}
-	}
-	window.app.refresh()
+				window.app.refresh()
+	})
+	
 }
 
 ///User
@@ -352,7 +355,7 @@ window.getUser = function(id) {
 	return window.userMap[id]
 }
 window.getUser = function(id) {
-	id = id||window.getUserId
+	id = id||window.curUserId
 	return window.userMap[id]
 }
 window.setCurUser = function(id) {
@@ -542,7 +545,7 @@ class App extends Component {
 	    	  <div>
 		      	    	
 		
-		    	<h3 className="App-title">Welcome to Store Builder</h3>
+		    	<h3 className="App-title">Welcome to Story Builder</h3>
 		    	<div style={{marginLeft:"20px"}}>
 		    		<div ref={(node)=>{self.dropdown=node}} style={{display:"inline-block", cursor:"pointer", textAlign:"center", paddingLeft:"25px", paddingRight:"25px", width:"30px", background:"#ccc", border: "solid 1px #000"}} onClick={e=>{window.showDD.call(self, true)}}>File</div>
 				    {
@@ -563,7 +566,7 @@ class App extends Component {
 								Object.keys(window.getUser().storyMap).map((key, idx)=>{
 									let story = window.getUser().storyMap[key]
 								
-									return <option value={story.id}>{story.name}</option>
+									return <option key={idx} value={story.id}>{story.name}</option>
 								})
 								
 							}
