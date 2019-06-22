@@ -188,7 +188,11 @@ window.loadStories = function(response) {
 	})
 	url = window.homeUrl+"/dir?filePath=./db/dn/stories/&fieldName=expose&fieldValue=1&fieldValueType=int"
 	window.get(url, function(res){
+		var uu = window.getUser()
 		for (var u in res) {
+			if (u===uu.user) {
+				continue
+			}
 			window.userMap[u].storyMap = res[u]
 		}
 		
