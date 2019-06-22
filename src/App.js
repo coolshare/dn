@@ -5,6 +5,7 @@ import Login from './Views/Login'
 import StoryDefine from './Views/StoryDefine'
 import Register from './Views/Register'
 import Introduction from './Views/Introduction'
+import LinkParagraphView from './Views/LinkParagraphView'
 import Dialog from './Views/Dialog'
 import Tab from './Components/Tab'
 import $ from 'jquery';
@@ -156,8 +157,12 @@ window.exposeParagraph = function(e, level=1) {
 	window.getEntity().expose = level
 	window.app.refresh()
 }
-window.linkParagraph = function(e) {
+window.linkParagraph = function(e, fromContextMenu) {
 	e.preventDefault();
+	window.app.showDialog(<LinkParagraphView fromContextMenu={fromContextMenu}/>, {title:"Link Paragraph to Others", hideX:true, top:"10px", left:"10px", width:"1000px", height:"600px", handleOK:function() {
+		
+	
+	}})
 }
 
 window.showDD = function(show){
@@ -592,7 +597,7 @@ class App extends Component {
 			 <div className="FlatItem" onClick={e=>{window.openEditParagraphDlg(e)}}><span style={{padding:"7px"}}>Edit</span></div>
 			 <div className="FlatItem" onClick={e=>{window.removeEnity(e)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Delete</span></div>
 			 <div className="FlatItem" onClick={e=>{window.exposeParagraph(e)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Expose this paragraph</span></div>
-			 <div className="FlatItem" onClick={e=>{window.linkParagraph(e)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Link to another paragraph...</span></div>
+			 <div className="FlatItem" onClick={e=>{window.linkParagraph(e, true)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Link to another paragraph...</span></div>
 		</div>
       </div>
     );
