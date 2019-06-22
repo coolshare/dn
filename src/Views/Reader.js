@@ -75,7 +75,7 @@ export default class Reader extends Component {
         		if (node.branchingLogic) {
         			window.app.showDialog(window.app.showBranchingLogic.call(window.app, node), {title:"Please select one", hideX:true, height:"400px", handleOK:function() {
         				
-        				var n = window.entityMap[window.branchingLogicSelection]
+        				var n = window.getStory()[window.branchingLogicSelection]
         				if (n) {
         					window.pages.push(n)
             				self.setState(state => ({
@@ -83,7 +83,7 @@ export default class Reader extends Component {
 					        }))
         				} else {
         					index = Math.floor(Math.random()*node.linksTo.length)
-        					var n = window.entityMap[node.linksTo[index].target]
+        					var n = window.getStory()[node.linksTo[index].target]
         					window.pages.push(n)
         					self.setState(state => ({
 					            selected: state.selected + 1
@@ -96,7 +96,7 @@ export default class Reader extends Component {
         			index = Math.floor(Math.random()*node.linksTo.length)
         		}
         	} 
-    		var n = window.entityMap[node.linksTo[index].target]
+    		var n = window.getStory()[node.linksTo[index].target]
     		window.pages.push(n)
     	}
     	

@@ -25,19 +25,6 @@ window.get = function (url, callback){
 			console.log('Error when get');
 		});
 }
-window.loadStory = function (storyId, callback) {
-	var url = window.homeUrl+"?filePath="+window.storyPath+"&fileName="+encodeURIComponent(storyId+".txt")
-	window.get(url, function(res){
-		window.curStory = JSON.parse(res)
-		window.entityMap = {}
-		for (var i=0; i<window.curStory.sections.length; i++) {
-			var item = window.curStory.sections[i]
-			window.entityMap[item.id] = item
-		}
-		callback()
-		console.log(JSON.stringify(window.curStory.sections, null, 4))
-	})
-}
 
 class CustomDiagram extends React.PureComponent {
   constructor(props) {
@@ -51,13 +38,18 @@ class CustomDiagram extends React.PureComponent {
   componentWillMount() {
 	//window.loadStory(window.storyId, function() {
 		diagramStore.dispatch(setConfig(config));
-	    var mm = window.curStory.sections||model
+	    var mm = Object.values(window.getStory().entityMap)||model
 	    diagramStore.dispatch(setEntities(mm));
 	    window.store = diagramStore
 	    diagramOn('anyChange', entityState => {
 	      // You can get the model back
 	      // after modifying the UI representation
-	    	window.curStory.sections = Object.assign([], entityState)
+	    	var res = {}
+	    	for (var i=0; i<entityState.length;i++) {
+	    		var item = entityState[i]
+	    		res[item.id] = item 
+	    	}
+	    	window.getStory().entityMap = res
 	      console.info(entityState)
 	    });
 	//})

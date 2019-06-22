@@ -11,17 +11,16 @@ export default class Login extends Component {
 
         
     }
-	componentDidMount() {
-		window.loadUsers()
-	}
+
 
 	handleLogin() {
 		var user = this.userName.value
 		var password = this.password.value
 		var u = window.userMap[user]
 		if (u!==undefined && u.password===password) {
-			window.curUser = {user:user, storyMap:{}}
-			window.post( window.homeUrl+"/mkdir", {filePath:["./db/dn/stories/"+window.curUser.user]}, function() {
+			window.getUserId = user
+			window.addUser({user:user, storyMap:{}})
+			window.post( window.homeUrl+"/mkdir", {filePath:["./db/dn/stories/"+window.getUser().user]}, function() {
 				  
 				window.loadStories(function(){
 					window.app.switchView("MainView")

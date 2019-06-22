@@ -20,8 +20,8 @@ export default class Register extends Component {
 			window.alertBox("The user name has been used by others. Please enter a different one", "Warning")
 			return
 		}
-		window.users.push(res)
-		window.post( window.homeUrl+"/save", {filePath:"./db/dn/user", fileName:"users.txt", "content":window.users}, function() {
+		window.userMap[res.user] = res
+		window.post( window.homeUrl+"/save", {filePath:"./db/dn", fileName:"users.txt", "content":window.userMap}, function() {
 			window.post( window.homeUrl+"/mkdir", {filePath:["./db/dn/stories/"+res.user]})
 			window.app.switchView("Login")
 		})

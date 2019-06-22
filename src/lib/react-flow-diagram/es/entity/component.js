@@ -27,7 +27,6 @@ function _taggedTemplateLiteralLoose(strings, raw) { strings.raw = raw; return s
  * ==================================== */
 
 var contextMenuActions = function contextMenuActions(props) {
-  //window.app.selectedEntity = window.entityMap[props.model.id]
   var remove = {
     action: function action() {
       return props.removeEntity(props.model.id);
@@ -48,7 +47,7 @@ var contextMenuActions = function contextMenuActions(props) {
     return {
       action: function action() {
     	if (entityTypeName==="BranchingLogic") {
-    			if (window.app.selectedEntity.linksTo===undefined) {
+    		if (window.getEntity().linksTo===undefined) {
     				window.alertBox("Branching logic only available for Paragraphs with more than one branches.")
     				return
     			}
@@ -89,6 +88,9 @@ var Entity = function Entity(props) {
 	var ch = []
 	if (props.model.branchingLogic) {
 		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{cursor:"pointer", position:"absolute", top:"5px", left:"5px"}}><FontAwesomeIcon icon="code-branch"/></span>)
+	}
+	if (props.model.expose===1) {
+		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{cursor:"pointer", position:"absolute", top:"5px", left:"25px"}}><FontAwesomeIcon icon="file-export"/></span>)
 	}
 	ch = <div >{ch}{props.children}</div>
 	
@@ -207,11 +209,12 @@ var EntityContainerHOC = function EntityContainerHOC(WrappedComponent) {
         }
       }, _this.onMouseUp = function (ev) {
         ev.stopPropagation();
-        window.app.selectedEntity = window.entityMap[ev.currentTarget.id]
-        if (window.app.selectedEntity) {
+        window.setCurEnity(ev.currentTarget.id)
+        var sel = window.getEntity()
+        if (sel) {
         	var r = ev.currentTarget.getBoundingClientRect()
-        	window.app.selectedEntity.x = Math.round(r.left)
-        	window.app.selectedEntity.y = Math.round(r.top)
+        	sel.x = Math.round(r.x-20)
+        	sel.y = Math.round(r.y-100)
         }
         
         if (!_this.state.onMouseUpWouldBeClick) {

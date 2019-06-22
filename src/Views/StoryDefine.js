@@ -12,7 +12,7 @@ export default class StoryDefine extends Component {
         
     }
 	handleOK() {
-		var res = {name:this.storyName.value, description:this.description.value}
+		var res = {name:this.storyName.value, description:this.description.value, entityMap:{}}
 		if (res.name.trim().length===0) {
 			window.alertBox("Please enter a name for your story", "Warning")
 			return
@@ -20,13 +20,12 @@ export default class StoryDefine extends Component {
 			window.alertBox("Please enter a name with at least 2 characters for your story", "Warning")
 			return
 		}
-		window.curStory = res
+		
 		var firstSection = {"id":"_start_","type":"Paragraph","width":90,"height":60,"x":95,"y":94,"name":"Start Point"}
-		window.curStory.sections = [firstSection]
-		window.curStory.id = "ID"+new Date().valueOf()
-		window.entityMap = {}
-		window.entityMap[firstSection.id] = firstSection
-		window.curUser.storyMap[window.curStory.id] = window.curStory
+		res.entityMap[firstSection.id] = firstSection
+		res.id = "ID"+new Date().valueOf()
+		window.setCurStory(firstSection.id)
+		window.addStory(res)
 		window.app.refresh()
 	}
 	render() {

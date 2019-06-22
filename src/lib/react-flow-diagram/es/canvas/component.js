@@ -79,7 +79,7 @@ var Canvas = function Canvas(props) {
         })
         // $FlowFixMe
         .map(function (entity) {
-          window.entityMap[entity.id].linksTo = entity.linksTo
+          window.getStory().entityMap[entity.id].linksTo = entity.linksTo
           return React.createElement(Links, { key: entity.id, links: entity.linksTo });
         }),
         props.isConnecting && React.createElement(Links, { links: props.connectingLink }),

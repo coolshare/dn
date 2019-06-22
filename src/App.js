@@ -13,16 +13,18 @@ import bg from "./images/bbb.gif"
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 
-import {faCodeBranch, faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
+import {faFileImport, faFileExport, faCodeBranch, faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
 	faDownload, faSignal, faArrowUp, faSync, faCaretDown, faWindowClose, faTimes } from '@fortawesome/free-solid-svg-icons';
-library.add(faCodeBranch, faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
+library.add(faFileImport, faFileExport, faCodeBranch, faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
 	faDownload, faSignal, faArrowUp,  faSync, faCaretDown, faWindowClose, faTimes);
 
 var beforeNavigatedAway = function () {
 	//window.saveStories()
 };
+window.storyMap = {}
+window.userMap = {}
 window.homeUrl = "http://73.71.159.185:12345"
-window.userPath = "./db/dn/user/"
+window.userPath = "./db/dn/"
 window.storyPath = "./db/dn/stories/"
 window.addEventListener('beforeunload', beforeNavigatedAway, false);
 window.addEventListener('unload', beforeNavigatedAway, false);
@@ -40,24 +42,19 @@ window.addEventListener("resize", function(e) {
 window.loadUsers = function () {
 	var url = window.homeUrl+"?filePath="+window.userPath+"&fileName=users.txt"
 	window.get(url, function(res){
-		window.users = res
-		window.userMap = {}
-		for (var i=0; i<window.users.length; i++) {
-			var item = window.users[i]
-			window.userMap[item.user] = item
-		}
+		window.userMap = res
 	})
 }
 
 window.saveStories = function() {
-	for (var i in window.curUser.storyMap) {
-		window.saveStory(window.curUser.storyMap[i])
+	for (var i in window.getUser().storyMap) {
+		window.saveStory(window.getUser().storyMap[i])
 	}
 }
 window.saveStory = function(story) {
 	var data = {
 			fileName:story.id+".txt",
-			filePath:window.storyPath+window.curUser.user,
+			filePath:window.storyPath+window.getUser().user,
 			content:story
 	}
 	window.post( window.homeUrl+"/save", data);
@@ -66,15 +63,15 @@ window.saveStory = function(story) {
 
 window.exportUser = function() {
 	var FileSaver = require('file-saver');
-	var blob = new Blob([JSON.stringify(window.curUser)], {type: "text/plain;charset=utf-8"});
-	FileSaver.saveAs(blob, window.curUser.user+".txt");
+	var blob = new Blob([JSON.stringify(window.getUser)], {type: "text/plain;charset=utf-8"});
+	FileSaver.saveAs(blob, window.getUser().user+".txt");
 
 	
 }
 
 
 window.dispFile = function(contents) {
-	window.curUser = JSON.parse(contents)
+	window.getUser = JSON.parse(contents)
 	
 	window.app.refresh()
 
@@ -123,18 +120,18 @@ window.alertBox = function(message, title) {
 	window.app.showDialog(<div>{message}</div>, {top:"10px", width:"500px", height:"150px", title:title})
 }
 window.deleteStory = function() {
-	if (window.curStory===undefined) {
+	if (window.getStory()===undefined) {
 		return
 	}
-	window.confirmBox("Are you sure to delete "+window.curStory.name+"?", "Delete a Story", function() {
-		delete window.curUser.storyMap[window.curStory.id]
-		window.curStory = undefined
+	window.confirmBox("Are you sure to delete "+window.getStory().name+"?", "Delete a Story", function() {
+		delete window.getUser().storyMap[window.getStory().id]
+		window.setCurStory()
 		window.app.refresh()
 	})
 }
 
 window.initServer = function(response) {
-	window.post( window.homeUrl+"/mkdir", {filePath:["./db", "./db/dn", "./db/dn/stories", "./db/dn/user"]}, function() {
+	window.post( window.homeUrl+"/mkdir", {filePath:["./db", "./db/dn", "./db/dn/stories"]}, function() {
 		if (response) {
 			response()
 		}
@@ -147,6 +144,22 @@ window.createStory = function () {
 		storyDefine.handleOK.call(storyDefine)
 	}})
 }
+	
+window.exposeStory = function(e, level=1) {
+	e.preventDefault();
+	window.getStory().expose = level
+}
+
+window.exposeParagraph = function(e, level=1) {
+	e.preventDefault();
+	window.getStory().expose = level 
+	window.getEntity().expose = level
+	window.app.refresh()
+}
+window.linkParagraph = function(e) {
+	e.preventDefault();
+}
+
 window.showDD = function(show){
 	var dd = this.dd
 	if (dd===undefined) {
@@ -166,12 +179,19 @@ window.showDD = function(show){
 }
 
 window.loadStories = function(response) {
-	var url = window.homeUrl+"/dir?filePath=./db/dn/stories/"+window.curUser.user
+	var url = window.homeUrl+"/dir?filePath=./db/dn/stories/"+window.getUser().user
 	window.get(url, function(res){
-		window.curUser.storyMap = res
+		window.getUser().storyMap = res
 		if (response) {
 			response(res)
 		}
+	})
+	url = window.homeUrl+"/dir?filePath=./db/dn/stories/&fieldName=expose&fieldValue=1&fieldValueType=int"
+	window.get(url, function(res){
+		for (var u in res) {
+			window.userMap[u].storyMap = res[u]
+		}
+		
 	})
 }
 
@@ -187,7 +207,7 @@ window.popupBranchingLogic = function() {
 			}
 			
 		}
-		window.app.selectedEntity.branchingLogic = branchingLogic
+		window.getEntity().branchingLogic = branchingLogic
 	
 	}})
 }
@@ -219,33 +239,7 @@ window.post = function(url, data, response){
 		});
 
 }
-window.deleteEntity = function() {
-	var entity = window.app.selectedEntity
-	var list = window.curStory.sections
-	var res = []
-	for (var i=0; i<list.length; i++) {
-		var item = list[i];
-		if (item.id===entity.id) {
-			continue
-		}
-		if (item.linksTo) {
-			var rr = []
-			for (var j=0; j<item.linksTo.length; j++) {
-				var link = item.linksTo[j]
-				if (link.target===entity.id) {
-					continue
-				}
-				rr.push(link)
-			}
-			item.linksTo = rr
-		}
-		
-		res.push(item)
-	}
-	window.curStory.sections = res
-	delete window.entityMap[entity.id]
-	window.app.refresh()
-}
+
 
 window.showConextMenu = function(e) {
 	var menu = window.app.references.contextMenu
@@ -258,8 +252,8 @@ window.showConextMenu = function(e) {
 }
 
 window.openEditParagraphDlg = function(id) {
-	id = id||window.app.selectedEntity.id
-	var entity = window.entityMap[id]
+	id = id||window.getEntity().id
+	var entity = window.getStory()[id]
 	  window.app.showDialog(window.app.editParagraph(entity), {top:"10px", width:"920px", height:"650px",title:"Edit "+entity.name, hideX:true, handleOK:function() {
 		
 		entity.name = window.app.titleInput.value
@@ -270,6 +264,99 @@ window.openEditParagraphDlg = function(id) {
 	}})
 }
 
+
+
+
+/// Story
+window.getStory = function(sId, uId) {
+	sId = sId||window.curStoryId
+	uId = uId||window.getUserId
+	var u = window.getUser(uId)
+	if (u) {
+		return u.storyMap[sId]
+	}
+	
+}
+
+window.setCurStory = function(id) {
+	window.curStoryId = id
+}
+window.addStory = function(s) {
+	window.getUser().storyMap[s.id] = s
+}
+
+window.removeStory = function(id) {
+	delete window.getUser().storyMap[id]
+}
+
+
+
+
+/// Entity
+window.getEntity = function(eId, sId, uId) {
+	eId = eId||window.curEntityId
+	sId = sId||window.curStoryId
+	uId = uId||window.getUserId
+	var u = window.getUser()
+	if (u) {
+		var s = u.storyMap[sId]
+		if (s) {
+			return s.entityMap[eId]
+		}
+	}
+	
+}
+
+window.setCurEnity = function(id) {
+	window.curEntityId = id
+}
+
+window.addEnity = function(e) {
+	var s = window.getStory()
+	s.entityMap[e.id] = e
+}
+
+window.removeEnity = function(e, id) {
+	e.preventDefault();
+	var entity = id?window.getEntity(id):window.getEntity()
+	var s = window.getStory()
+	delete s.entityMap[id]
+	for (var i in s.entityMap) {
+		var item = s.entityMap[i];
+		if (item.linksTo) {
+			var rr = []
+			for (var j=0; j<item.linksTo.length; j++) {
+				var link = item.linksTo[j]
+				if (link.target===entity.id) {
+					continue
+				}
+				rr.push(link)
+			}
+			item.linksTo = rr
+		}
+	}
+	window.app.refresh()
+}
+
+///User
+window.getUser = function(id) {
+	return window.userMap[id]
+}
+window.getUser = function(id) {
+	id = id||window.getUserId
+	return window.userMap[id]
+}
+window.setCurUser = function(id) {
+	window.curUserId = id
+}
+window.addUser = function(u) {
+	window.userMap[u.user] = u
+}
+
+window.removeUser = function(id) {
+	delete window.userMap[id]
+}
+//////////////////////////////////////////////////////// app ////////////////////
 class App extends Component {
   constructor(props) {
 	  super(props)
@@ -280,8 +367,7 @@ class App extends Component {
   
   componentDidMount() {
 	  window.initServer(function() {
-		  window.post( window.homeUrl+"/create", {filePath:"./db/dn/user", fileName:"users.txt", "content":[]}, function() {
-	  
+		  window.post( window.homeUrl+"/create", {filePath:"./db/dn", fileName:"users.txt", "content":{}}, function() {
 			  window.loadUsers()
 			  
 		  })
@@ -345,7 +431,7 @@ class App extends Component {
   }
   
   handleBranchingLogic() {
-	  var node = window.app.selectedEntity
+	  var node = window.getEntity()
 	  var selections = []
 	  var dd = ["A", "B", "C", "D"]
 	  for (let i=0; i<4; i++) {
@@ -354,7 +440,7 @@ class App extends Component {
 		  	<select defaultValue={exist.branch} ref={(node)=>{this["branchSelect_"+i] = node}} ><option value="_RANDOM_">Randomly selected one</option>
 		  		{
 		  			node.linksTo.map((link, idx)=>{
-		  				var n = window.entityMap[link.target]
+		  				var n = window.getStory()[link.target]
 		  				return <option value={n.id}>{n.name}</option>
 		  			})
 		  		}
@@ -370,16 +456,11 @@ class App extends Component {
   handleStorySelect(e) {
 	  var id = e.target.value
 	  if (id==="") {
-		  window.curStory = undefined
+		  window.setCurStory()
 		  this.refresh()
 		  return
 	  }
-	  window.curStory = window.curUser.storyMap[id]
-	  window.entityMap = {}
-		for (var i=0; i<window.curStory.sections.length; i++) {
-			var item = window.curStory.sections[i]
-			window.entityMap[item.id] = item
-		}
+	  window.setCurStory(id)
 	  window.app.refresh()
 	  
 	  
@@ -437,7 +518,7 @@ class App extends Component {
                              
                          },
                          "handler": function () {
-                        	 window.pages = [window.entityMap["_start_"]]
+                        	 window.pages = [window.getStory()["_start_"]]
                         	 
                         	 window.app.state.topTabView = "StoryReader"
                         		 self.props.container.refresh()
@@ -457,20 +538,21 @@ class App extends Component {
 		    		<div ref={(node)=>{self.dropdown=node}} style={{display:"inline-block", cursor:"pointer", textAlign:"center", paddingLeft:"25px", paddingRight:"25px", width:"30px", background:"#ccc", border: "solid 1px #000"}} onClick={e=>{window.showDD.call(self, true)}}>File</div>
 				    {
 				    	<div className="shadow" style={{display:"none", position:"fixed", width:"200px", zIndex:104, background:"#EEE", padding:"10px", borderRadius:"2px", boxShadow:"rgba(0, 0, 0, 0.5) 5px 5px 15px 0px"}} ref={(node)=>{self.dd = node}} >												
-							 <div className="FlatItem"  onClick={e=>{window.createStory()}}><span style={{padding:"7px"}}>New</span></div>							 
-							 <div className="FlatItem" onClick={e=>{window.saveStories()}}><span style={{padding:"7px"}}>Save</span></div>
-							 <div className="FlatItem" onClick={e=>{window.deleteStory()}}><span style={{padding:"7px", color:window.curStory?"#000":"#999"}}>Delete</span></div>
+							 <div className="FlatItem"  onClick={e=>{window.createStory(e)}}><span style={{padding:"7px"}}>New</span></div>							 
+							 <div className="FlatItem" onClick={e=>{window.saveStories(e)}}><span style={{padding:"7px"}}>Save</span></div>
+							 <div className="FlatItem" onClick={e=>{window.deleteStory(e)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Delete</span></div>
 							 <hr/>
+							 <div className="FlatItem"  onClick={e=>{window.exposeStory(e, 2)}}><span style={{padding:"7px"}}>Expose Current Story</span></div>
 							 <div className="FlatItem"  onClick={e=>{window.openFile(window.dispFile)}}><span style={{padding:"7px"}}>Import</span></div>
-							 <div className="FlatItem" onClick={e=>{window.exportUser()}}><span style={{padding:"7px"}}>Export</span></div>
+							 <div className="FlatItem" onClick={e=>{window.exportUser(e)}}><span style={{padding:"7px"}}>Export</span></div>
 						</div>
 				    }
 					<div style={{display:"inline-block", marginLeft:"10px"}}>
 						<span>Stories:</span>
 						<select style={{width:"200px"}} onChange={e=>{this.handleStorySelect(e)}}><option value=""></option>
 							{
-								Object.keys(window.curUser.storyMap).map((key, idx)=>{
-									let story = window.curUser.storyMap[key]
+								Object.keys(window.getUser().storyMap).map((key, idx)=>{
+									let story = window.getUser().storyMap[key]
 								
 									return <option value={story.id}>{story.name}</option>
 								})
@@ -480,16 +562,16 @@ class App extends Component {
 					</div>
 				</div>
 		        {
-		        	self.state.topTabView==="FlowDesign"&&  window.curStory!==undefined &&
+		        	self.state.topTabView==="FlowDesign"&&  window.getStory()!==undefined &&
 		          	<main className="main"   ref={(node)=>{self.references.main = node}} style={{borderRadius:"10px", margin:"10px", height:"700px"}}>
 		          		<CustomDiagram ref={(node)=>{self.references.CustomDiagram = node}}/>
 		            </main>
 		        }
 		        {
-		        	self.state.topTabView==="StoryReader"&& window.curStory!==undefined && <Reader  ref={(node)=>{self.references.Reader = node}}/>
+		        	self.state.topTabView==="StoryReader"&& window.getStory()!==undefined && <Reader  ref={(node)=>{self.references.Reader = node}}/>
 		        }
 	        	{
-		        	window.curStory===undefined && <Introduction  ref={(node)=>{self.references.Introduction = node}}/>
+		        	window.getStory()===undefined && <Introduction  ref={(node)=>{self.references.Introduction = node}}/>
 		        }
 		    </div>
 		}
@@ -502,9 +584,11 @@ class App extends Component {
     	{ 
       		self.state.Dialog && <Dialog ref={(node)=>{self.references.Dialog = node}} options={self.state.Dialog.options}>{self.state.Dialog.content}</Dialog>
       	}  
-    	<div className="shadow" style={{display:"none", position:"fixed", width:"200px", zIndex:104, background:"#EEE", padding:"10px", borderRadius:"2px", boxShadow:"rgba(0, 0, 0, 0.5) 5px 5px 15px 0px"}} ref={(node)=>{window.app.references.contextMenu = node}} >																		 
-			 <div className="FlatItem" onClick={e=>{window.openEditParagraphDlg()}}><span style={{padding:"7px"}}>Edit</span></div>
-			 <div className="FlatItem" onClick={e=>{window.deleteEntity()}}><span style={{padding:"7px", color:window.curStory?"#000":"#999"}}>Delete</span></div>
+    	<div className="shadow" style={{display:"none", position:"fixed", width:"250px", zIndex:104, background:"#EEE", padding:"10px", borderRadius:"2px", boxShadow:"rgba(0, 0, 0, 0.5) 5px 5px 15px 0px"}} ref={(node)=>{window.app.references.contextMenu = node}} >																		 
+			 <div className="FlatItem" onClick={e=>{window.openEditParagraphDlg(e)}}><span style={{padding:"7px"}}>Edit</span></div>
+			 <div className="FlatItem" onClick={e=>{window.removeEnity(e)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Delete</span></div>
+			 <div className="FlatItem" onClick={e=>{window.exposeParagraph(e)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Expose this paragraph</span></div>
+			 <div className="FlatItem" onClick={e=>{window.linkParagraph(e)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Link to another paragraph...</span></div>
 		</div>
       </div>
     );
