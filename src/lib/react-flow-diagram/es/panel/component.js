@@ -43,7 +43,7 @@ var Panel = function Panel(props) {
       PanelTools,
       null,
       props.entityTypeNames.map(function (entityTypeName) {
-    	if (entityTypeName==="BranchingLogic") {
+    	if (entityTypeName==="BranchingLogic" || entityTypeName==="LinkToOthers") {
     		return null
     	}
         return React.createElement(

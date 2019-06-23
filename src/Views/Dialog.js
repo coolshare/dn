@@ -2,6 +2,14 @@ import React, { Component } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 export default class Dialog extends Component {
+	
+	handleOK(e){
+		if (this.props.options.handleOK) { 
+			if (this.props.options.handleOK.call(this)!==true) {
+				window.app.showDialog()
+			}
+		}
+	}
 	render() {
 		var w = 600
 		var ww = this.props.options.width
@@ -26,7 +34,7 @@ export default class Dialog extends Component {
 						</div>
 						<div className="dlgBody" style={{padding:"10px"}}>{this.props.children}</div>	
 						<div style={{padding:"10px", display:"flex", adjustItems:"center", justifyContent:"center"}}>
-							{this.props.options.hideOK!==true && <button onClick={(e)=>{window.app.showDialog();if (this.props.options.handleOK) this.props.options.handleOK.call(this)}} ref={(node)=>{this.okButton = node}} style={{width:"100px", marginRight:"20px"} }>OK</button>}
+							{this.props.options.hideOK!==true && <button onClick={(e)=>{this.handleOK(e)}} ref={(node)=>{this.okButton = node}} style={{width:"100px", marginRight:"20px"} }>OK</button>}
 							{this.props.options.hideCancel!==true && <button onClick={(e)=>{window.app.showDialog();if (this.props.options.handleCancel) this.props.options.handleCancel.call(this)}} ref={(node)=>{this.cancelButton = node}} style={{width:"100px"} }>Cancel</button>}
 						</div>	
 				</div>

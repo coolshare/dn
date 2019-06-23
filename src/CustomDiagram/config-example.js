@@ -1,7 +1,10 @@
 import Paragraph from './Paragraph/component';
 import ParagraphIcon from './Paragraph/icon';
+import LinkToOthers from './LinkToOthers/component';
 import BranchingLogic from './BranchingLogic/component';
 import BranchingLogicIcon from './BranchingLogic/icon';
+import LinkToOthersIcon from './LinkToOthers/icon';
+
 
 const config = {
   entityTypes: {
@@ -10,6 +13,10 @@ const config = {
       height: 60,
     },
     BranchingLogic: {
+    	width: 50,
+        height: 50,
+    },
+    LinkToOthers: {
     	width: 50,
         height: 50,
     }
@@ -22,6 +29,10 @@ const customEntities = {
     component: Paragraph,
     icon: ParagraphIcon,
   },
+  LinkToOthers: {
+	    component: LinkToOthers,
+	    icon: LinkToOthersIcon,
+	  },
   BranchingLogic: {
 	    component: BranchingLogic,
 	    icon: BranchingLogicIcon,

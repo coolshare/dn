@@ -81,6 +81,7 @@ var canvasReducer = function canvasReducer(state, action) {
       return _extends({}, configViewportHelper(state), addEntityHelper(action.payload.entity.id));
 
     case 'rd/entity/LINK_TO':
+      
       return _extends({}, state, {
         connecting: {
           currently: false,

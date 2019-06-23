@@ -7,6 +7,8 @@ import Register from './Views/Register'
 import Introduction from './Views/Introduction'
 import LinkParagraphView from './Views/LinkParagraphView'
 import Dialog from './Views/Dialog'
+import AlertBox from './Views/AlertBox'
+import ConfirmBox from './Views/ConfirmBox'
 import Tab from './Components/Tab'
 import $ from 'jquery';
 import './css/Reader.css'
@@ -14,9 +16,9 @@ import bg from "./images/bbb.gif"
 
 import { library } from '@fortawesome/fontawesome-svg-core';
 
-import {faFileImport, faFileExport, faCodeBranch, faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
+import {faLink, faFileImport, faFileExport, faCodeBranch, faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
 	faDownload, faSignal, faArrowUp, faSync, faCaretDown, faWindowClose, faTimes } from '@fortawesome/free-solid-svg-icons';
-library.add(faFileImport, faFileExport, faCodeBranch, faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
+library.add(faLink, faFileImport, faFileExport, faCodeBranch, faGlobe, faCog, faQuestion, faPen, faEnvelope, faEdit, faPlug, faUser, faArrowDown, faArrowLeft, faChartBar, faTable, faWrench, faPlus, faTrashAlt, faSave, faUpload,
 	faDownload, faSignal, faArrowUp,  faSync, faCaretDown, faWindowClose, faTimes);
 
 var beforeNavigatedAway = function () {
@@ -107,7 +109,7 @@ window.openFile = function(func) {
 }
 
 window.confirmBox = function(message, title, handleYes, handleNo) {
-	window.app.showDialog(<div>{message}</div>, {top:"10px", width:"600px", height:"150px", title:title, hideX:true, handleOK:function() {
+	window.app.showConfirm(<div>{message}</div>, {key:"Confirm", top:"100px", width:"400px", height:"200px", title:title, hideX:true, handleOK:function() {
 		if (handleYes) {
 			handleYes()
 		}
@@ -118,7 +120,7 @@ window.confirmBox = function(message, title, handleYes, handleNo) {
 	}})
 }
 window.alertBox = function(message, title) {
-	window.app.showDialog(<div>{message}</div>, {top:"10px", width:"500px", height:"150px", title:title})
+	window.app.showAlert(<div>{message}</div>, {key:"Alert", hideCancel:true, top:"100px", width:"400px", height:"200px", title:title})
 }
 window.deleteStory = function() {
 	if (window.getStory()===undefined) {
@@ -151,20 +153,69 @@ window.exposeStory = function(e, level=1) {
 	window.getStory().expose = level
 }
 
-window.exposeParagraph = function(e, level=1) {
+window.exposeParagraph = function(e, level) {
 	e.preventDefault();
+	if (level===undefined) {
+		window.confirmBox("Are you sure to this paragraph unexpose?", "Warning", function() {
+			window.getStory().expose = level 
+			window.getEntity().expose = level
+			window.app.refresh()
+		})
+		return
+	}
 	window.getStory().expose = level 
 	window.getEntity().expose = level
 	window.app.refresh()
 }
 window.linkParagraph = function(e, fromContextMenu) {
 	e.preventDefault();
-	window.app.showDialog(<LinkParagraphView fromContextMenu={fromContextMenu}/>, {title:"Link Paragraph to Other Stories", hideX:true,  width:"1000px", height:"360px", handleOK:function() {
-		
+	window.app.showDialog(<LinkParagraphView ref={(node)=>{window.app.references.LinkParagraphView = node}} fromContextMenu={fromContextMenu}/>, {title:"Link Paragraph to Other Stories", hideX:true, top:"10px", width:"1100px", height:"560px", handleOK:function() {
+		var sId = window.app.references.LinkParagraphView.tarStory.value
+		var tarEnity = window.app.references.LinkParagraphView.tarEnity.value
+		if (sId===""||tarEnity==="") {
+			window.alertBox("Please at least select an entry point.", "Warning")
+			return true
+		}
+		var sss = sId.split(".")
+		window.getEntity().externalLinkEntryPoint = {userId:sss[0], storyId:sss[1], entityId:tarEnity}
+		window.getEntity().externalLinkExitPoint = {userId:sss[0], storyId:sss[1], entityId:window.app.references.LinkParagraphView.exitEnity.value}
 	
 	}})
 }
-
+window.findFromEntityId = function(entity, sId, targetId) {
+	if(entity.linksTo) {
+		for (var j=0; j<entity.linksTo.length; j++) {
+			var id = entity.linksTo[j].target
+			if(id===targetId) {
+				return  entity.id
+			}
+			var ee = window.getEntity(id, sId)
+			if (ee.linksTo) {
+				var rr = window.findFromEntityId(ee, sId, targetId)
+				if (rr) {
+					return rr
+				}
+			}
+		}
+	}
+	
+}
+window.findReachableEntities = function(entity, storyId, userId, res, skip) {
+	if (skip!=true) {
+		res.push(entity)
+	} 
+	
+	if (entity.linksTo) {
+		for (var i=0; i<entity.linksTo.length; i++) {
+			var id = entity.linksTo[i].target
+			var ee = window.getEntity(id, storyId, userId)
+			res = window.findReachableEntities(ee, storyId, userId, res)
+		}
+	}
+	
+		
+	return res
+}
 window.showDD = function(show){
 	var dd = this.dd
 	if (dd===undefined) {
@@ -253,7 +304,9 @@ window.post = function(url, data, response){
 window.showConextMenu = function(e) {
 	var menu = window.app.references.contextMenu
 	var c = e.target
-	
+	var entity = window.getEntity()
+	window.app.references.exposeMenuItem.style.display = entity && entity.type==="LinkToOthers"?"none":"block" 
+	window.app.references.linkParagraphMenuItem.style.display = entity&& entity.type==="LinkToOthers" && entity.externalLinkEntryPoint===undefined?"block":"none" 
 	var r = c.getBoundingClientRect()
 	menu.style.top = (r.top+20)+"px"
 	menu.style.left = (r.left+r.width)+"px"
@@ -306,7 +359,7 @@ window.getEntity = function(eId, sId, uId) {
 	eId = eId||window.curEntityId
 	sId = sId||window.curStoryId
 	uId = uId||window.curUserId
-	var u = window.getUser()
+	var u = window.getUser(uId)
 	if (u) {
 		var s = u.storyMap[sId]
 		if (s) {
@@ -368,6 +421,19 @@ window.addUser = function(u) {
 window.removeUser = function(id) {
 	delete window.userMap[id]
 }
+window.openReader = function() {
+	
+	var story = window.getStory()
+	if (story===undefined) {
+		 window.alertBox("Please load a story to read", "Warning")
+		 return
+	}
+	window.pages = [window.getEntity("_start_")]
+	 
+	window.app.state.topTabView = "StoryReader"
+		 //self.props.container.refresh()
+    window.app.switchView("Reader")
+}
 //////////////////////////////////////////////////////// app ////////////////////
 class App extends Component {
   constructor(props) {
@@ -414,6 +480,21 @@ class App extends Component {
 		  d = Object.assign({}, {content:content, options})
 	  }
 	  this.setState({Dialog:d})
+  }
+  showAlert(content, options={}) {
+	  var d = undefined
+	  if (content!==undefined) {
+		  d = Object.assign({}, {content:content, options})
+	  }
+	  this.setState({Alert:d})
+  }
+  showConfirm(content, options={}) {
+	  var d = undefined
+	  if (content!==undefined) {
+		  d = Object.assign({}, {content:content, options})
+	  }
+	  
+	  this.setState({Confirm:d})
   }
   switchView(v, node) {
 	  this.setState({topView:v})
@@ -530,21 +611,24 @@ class App extends Component {
                              
                          },
                          "handler": function () {
-                        	 window.pages = [window.getStory()["_start_"]]
+                        	 var story = window.getStory()
+                        	 if (story===undefined) {
+                        		 window.alertBox("Please load a story to read", "Warning")
+                        		 return
+                        	 }
+                        	 window.pages = [window.getEntity("_start_")]
                         	 
                         	 window.app.state.topTabView = "StoryReader"
-                        		 self.props.container.refresh()
+                        		 //self.props.container.refresh()
                                  window.app.refresh()
                          },
                      }
                  ]}
 	  
     return (
-      <div className="App" style={{padding:"10px", height:"100vh", backgroundImage: `url(${bg})`}}>
+      <div className="App" style={{padding:"10px", height:"100vh", background:"#EEE"}}>
       	{self.state.topView==="MainView" &&
 	    	  <div>
-		      	    	
-		
 		    	<h3 className="App-title">Welcome to Story Builder</h3>
 		    	<div style={{marginLeft:"20px"}}>
 		    		<div ref={(node)=>{self.dropdown=node}} style={{display:"inline-block", cursor:"pointer", textAlign:"center", paddingLeft:"25px", paddingRight:"25px", width:"30px", background:"#ccc", border: "solid 1px #000"}} onClick={e=>{window.showDD.call(self, true)}}>File</div>
@@ -561,7 +645,7 @@ class App extends Component {
 				    }
 					<div style={{display:"inline-block", marginLeft:"10px"}}>
 						<span>Stories:</span>
-						<select style={{width:"200px"}} onChange={e=>{this.handleStorySelect(e)}}><option value=""></option>
+						<select value={window.curStoryId} style={{width:"200px"}} onChange={e=>{this.handleStorySelect(e)}}><option value=""></option>
 							{
 								Object.keys(window.getUser().storyMap).map((key, idx)=>{
 									let story = window.getUser().storyMap[key]
@@ -572,16 +656,15 @@ class App extends Component {
 							}
 						</select>
 					</div>
+					<button onClick={(e)=>{window.openReader()}}>Read Your Story</button>
 				</div>
 		        {
-		        	self.state.topTabView==="FlowDesign"&&  window.getStory()!==undefined &&
+		        	window.getStory()!==undefined &&
 		          	<main className="main"   ref={(node)=>{self.references.main = node}} style={{borderRadius:"10px", margin:"10px", height:"700px"}}>
 		          		<CustomDiagram ref={(node)=>{self.references.CustomDiagram = node}}/>
 		            </main>
 		        }
-		        {
-		        	self.state.topTabView==="StoryReader"&& window.getStory()!==undefined && <Reader  ref={(node)=>{self.references.Reader = node}}/>
-		        }
+		        
 	        	{
 		        	window.getStory()===undefined && <Introduction  ref={(node)=>{self.references.Introduction = node}}/>
 		        }
@@ -594,13 +677,22 @@ class App extends Component {
         	self.state.topView==="Register"&&<Register ref={(node)=>{self.references.Register = node}}/>
         }
     	{ 
-      		self.state.Dialog && <Dialog ref={(node)=>{self.references.Dialog = node}} options={self.state.Dialog.options}>{self.state.Dialog.content}</Dialog>
-      	}  
+      		self.state.Dialog && <Dialog  ref={(node)=>{self.references.Dialog = node}} options={self.state.Dialog.options}>{self.state.Dialog.content}</Dialog>
+      	} 
+    	{ 
+      		self.state.Confirm && <ConfirmBox  ref={(node)=>{self.references.Confirm = node}} options={self.state.Confirm.options}>{self.state.Confirm.content}</ConfirmBox>
+      	}
+    	{ 
+      		self.state.Alert && <AlertBox  ref={(node)=>{self.references.Alert = node}} options={self.state.Alert.options}>{self.state.Alert.content}</AlertBox>
+      	}
+    	{
+    		self.state.topView==="Reader"&& window.getStory()!==undefined && <Reader  ref={(node)=>{self.references.Reader = node}}/>
+        }
     	<div className="shadow" style={{display:"none", position:"fixed", width:"250px", zIndex:104, background:"#EEE", padding:"10px", borderRadius:"2px", boxShadow:"rgba(0, 0, 0, 0.5) 5px 5px 15px 0px"}} ref={(node)=>{window.app.references.contextMenu = node}} >																		 
-			 <div className="FlatItem" onClick={e=>{window.openEditParagraphDlg(e)}}><span style={{padding:"7px"}}>Edit</span></div>
-			 <div className="FlatItem" onClick={e=>{window.removeEnity(e)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Delete</span></div>
-			 <div className="FlatItem" onClick={e=>{window.exposeParagraph(e)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Expose this paragraph</span></div>
-			 <div className="FlatItem" onClick={e=>{window.linkParagraph(e, true)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Link to another paragraph...</span></div>
+			 <div className="FlatItem" ref={(node=>{window.app.references.editMenuItem = node})} onClick={e=>{window.openEditParagraphDlg(e)}}><span style={{padding:"7px"}}>Edit</span></div>
+			 <div className="FlatItem" ref={(node=>{window.app.references.removeMenuItem = node})} onClick={e=>{window.removeEnity(e)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Delete</span></div>
+			 <div className="FlatItem" ref={(node=>{window.app.references.exposeMenuItem = node})} onClick={e=>{window.exposeParagraph(e, 1)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Expose this paragraph</span></div>
+			 <div className="FlatItem" ref={(node=>{window.app.references.linkParagraphMenuItem = node})} onClick={e=>{window.linkParagraph(e, true)}}><span style={{padding:"7px", color:window.getStory()?"#000":"#999"}}>Link to another paragraph...</span></div>
 		</div>
       </div>
     );

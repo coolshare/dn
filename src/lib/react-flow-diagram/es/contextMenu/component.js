@@ -29,7 +29,7 @@ var ContextMenu = function ContextMenu(props) {
     null,
     props.actions.map(function (action) {
     	var sel = window.getEntity()
-    	if (action.iconVariety==="delete" || action.iconVariety==="BranchingLogic" && (sel===undefined || sel && (sel.linksTo===undefined||sel.linksTo.length<2))) {
+    	if (sel.type==="LinkToOthers" && (action.iconVariety==="arrow" ||action.iconVariety==="Paragraph" ||action.iconVariety==="LinkToOthers") ||action.iconVariety==="delete" || action.iconVariety==="BranchingLogic" && (sel===undefined || sel && (sel.linksTo===undefined||sel.linksTo.length<2))) {
     	  	  return null
     	    }
       return React.createElement(

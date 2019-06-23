@@ -39,6 +39,8 @@ export type ParagraphProps = DiagComponentProps & {
   name: string,
   content1: string,
   content2: string,
+  externalLinkEntryPoint:object,
+  externalLinkExitPoint:object,
   isEditing: boolean,
   toggleEdit: boolean => void,
   refreshName: (SyntheticStartPoint<HTMLTextAreaElement>) => void,
@@ -78,7 +80,9 @@ type ParagraphComponentState = {
   isEditing: boolean,
   name: string,
   content1:string,
-  content2:string
+  content2:string,
+  externalLinkEntryPoint:object,
+  externalLinkExitPoint:object
 };
 class ParagraphComponent extends React.PureComponent<
   ParagraphComponentProps,
@@ -91,6 +95,8 @@ class ParagraphComponent extends React.PureComponent<
     name: this.props.model.name,
     content1: this.props.model.content1,
     content2: this.props.model.content2,
+    externalLinkEntryPoint:this.props.model.externalLinkEntryPoint,
+    externalLinkExitPoint:this.props.model.externalLinkExitPoint
   };
 
   componentWillUnmount() {
@@ -122,11 +128,13 @@ class ParagraphComponent extends React.PureComponent<
     switch (ev.key) {
       case 'Enter':
         this.toggleEdit(false);
-        this.props.setName({ id: this.props.model.id, name: this.state.name, content1: this.state.content1, content2: this.state.content2 });
+        this.props.setName({ id: this.props.model.id, name: this.state.name, content1: this.state.content1, content2: this.state.content2, externalLinkEntryPoint:this.state.externalLinkEntryPoint,
+        	  externalLinkExitPoint:this.state.externalLinkExitPoint });
         break;
       case 'Escape':
         this.toggleEdit(false);
-        this.setState({ name: this.props.model.name, content1: this.state.content1, content2: this.state.content2 });
+        this.setState({ name: this.props.model.name, content1: this.state.content1, content2: this.state.content2,  externalLinkEntryPoint:this.state.externalLinkEntryPoint,
+      	  externalLinkExitPoint:this.state.externalLinkExitPoint  });
         break;
       // no default
     }
@@ -140,6 +148,8 @@ class ParagraphComponent extends React.PureComponent<
         name={this.state.name}
         content1={this.state.content1}
         content2={this.state.content2}
+        externalLinkEntryPoint={this.state.externalLinkEntryPoint}
+        externalLinkExitPoint={this.state.externalLinkExitPoint}
         toggleEdit={this.toggleEdit}
         refreshName={this.refreshName}
         handleKeyPress={this.handleKeyPress}

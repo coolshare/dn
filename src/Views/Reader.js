@@ -96,7 +96,7 @@ export default class Reader extends Component {
         			index = Math.floor(Math.random()*node.linksTo.length)
         		}
         	} 
-    		var n = window.getStory()[node.linksTo[index].target]
+    		var n = window.getEntity(node.linksTo[index].target)
     		window.pages.push(n)
     	}
     	
@@ -111,6 +111,9 @@ export default class Reader extends Component {
 		var self = this
 		return <div style={{"height":"500px", "width":"1000px", paddingTop:"10px", paddingBottom:"10px"}} onClick={(e)=>{this.handleClick(e)}} onMouseMove={(e)=>{this.handleMouseMove(e)}}>
 				<button style={{margin:"10px"}}
+			        onClick={(e)=>{window.app.switchView("MainView")}}
+			    	>Return to Story Builder</button>
+			    	<button style={{margin:"10px"}}
 			        onClick={this.previous}
 			        disabled={this.state.selected<2}
 			    	>Previous</button>

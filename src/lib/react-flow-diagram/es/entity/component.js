@@ -87,10 +87,13 @@ var EntityStyle = style.div(_templateObject);
 var Entity = function Entity(props) {
 	var ch = []
 	if (props.model.branchingLogic) {
-		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{cursor:"pointer", position:"absolute", top:"5px", left:"5px"}}><FontAwesomeIcon icon="code-branch"/></span>)
+		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{cursor:"pointer", position:"absolute", zIndex:111, top:"5px", left:"5px"}}><FontAwesomeIcon icon="code-branch"/></span>)
 	}
 	if (props.model.expose===1) {
-		ch.push(<span onClick={e=>{window.popupBranchingLogic()}} style={{cursor:"pointer", position:"absolute", top:"5px", left:"25px", fontSize:"9px"}}><FontAwesomeIcon icon="file-export"/></span>)
+		ch.push(<span onClick={e=>{window.exposeParagraph(e)}} style={{cursor:"pointer", position:"absolute", zIndex:111, top:"5px", left:"25px", fontSize:"9px"}}><FontAwesomeIcon icon="file-export"/></span>)
+	}
+	if (props.model.externalLinkEntryPoint!==undefined) {
+		ch.push(<span onClick={e=>{window.linkParagraph(e, true)}} style={{cursor:"pointer", position:"absolute", zIndex:111, top:"5px", left:"25px", fontSize:"9px"}}><FontAwesomeIcon icon="link"/></span>)
 	}
 	ch = <div >{ch}{props.children}</div>
 	
@@ -154,25 +157,32 @@ var EntityContainerHOC = function EntityContainerHOC(WrappedComponent) {
       }
 
       return _ret = (_temp = (_this = _possibleConstructorReturn(this, _React$PureComponent.call.apply(_React$PureComponent, [this].concat(args))), _this), _this.state = {
-        onMouseUpWouldBeClick: true
+        onMouseUpWouldBeClick: false
       }, _this.entityTypeNames = Object.keys(_this.props.entityTypes), _this.onMouseDown = function (ev) {
         ev.stopPropagation();
-        if (_this.props.canvas.connecting.currently) {
-          // In this case we want to select an entity to be connected to a
-          // previously selected entity to connect from
-          _this.props.linkTo(_this.props.model.id);
-        } else {
-          // Most common behavior is that when you click on an entity, your
-          // intention is to start dragging the entity
-          //
-          // The new thing is that now the anchor info is on metaenttiy, cursor
-          // position is on canvas, and what I actually need to do is set that
-          // this entity is starting to be selected for movement, passing the id
-          // of the entitiy. This will "ripple" down to canvas and metaentity.
-          // meow.
-          // so I have to create a new action for this...
-          _this.props.anchorEntity({ id: _this.props.model.id, isAnchored: true });
-        }
+       
+	        if (_this.props.canvas.connecting.currently) {
+	          // In this case we want to select an entity to be connected to a
+	          // previously selected entity to connect from   
+	        	 if (_this.props.model.type!=="LinkToOthers") {
+		        	_this.props.linkTo(_this.props.model.id);
+		        } else {
+		        	  window.alertBox("An Link-to-Other paragraph can not be linked from others")
+		        	  //TODO: disable the link creation
+		          }
+	        } else {
+	          // Most common behavior is that when you click on an entity, your
+	          // intention is to start dragging the entity
+	          //
+	          // The new thing is that now the anchor info is on metaenttiy, cursor
+	          // position is on canvas, and what I actually need to do is set that
+	          // this entity is starting to be selected for movement, passing the id
+	          // of the entitiy. This will "ripple" down to canvas and metaentity.
+	          // meow.
+	          // so I have to create a new action for this...
+	          _this.props.anchorEntity({ id: _this.props.model.id, isAnchored: true });
+	        }
+        
       }, _this.onMouseLeave = function (ev) {
         // If this magic below proves to be a hinderance, remove it.
         // Now that I'm tracking mouse movement on canvas, Entity mouseMove
