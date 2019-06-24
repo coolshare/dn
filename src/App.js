@@ -6,6 +6,7 @@ import StoryDefine from './Views/StoryDefine'
 import Register from './Views/Register'
 import Introduction from './Views/Introduction'
 import LinkParagraphView from './Views/LinkParagraphView'
+import ExposeParagraphView from './Views/ExposeParagraphView'
 import Dialog from './Views/Dialog'
 import AlertBox from './Views/AlertBox'
 import ConfirmBox from './Views/ConfirmBox'
@@ -22,7 +23,7 @@ library.add(faLink, faFileImport, faFileExport, faCodeBranch, faGlobe, faCog, fa
 	faDownload, faSignal, faArrowUp,  faSync, faCaretDown, faWindowClose, faTimes);
 
 var beforeNavigatedAway = function () {
-	//window.saveStories()
+	window.saveSystemInfo()
 };
 window.storyMap = {}
 window.userMap = {}
@@ -31,6 +32,7 @@ window.userPath = "./db/dn/"
 window.storyPath = "./db/dn/stories/"
 window.addEventListener('beforeunload', beforeNavigatedAway, false);
 window.addEventListener('unload', beforeNavigatedAway, false);
+window.systemInfo = {}
 
 window.addEventListener("click", function(e) {
 	if (e.target===window.app.dropdown || e.target===window.app.references.contextMenu) {
@@ -49,6 +51,25 @@ window.loadUsers = function () {
 	})
 }
 
+window.loadSystemInfo = function () {
+	var url = window.homeUrl+"?filePath="+window.userPath+"&fileName=SystemInfo.txt"
+	window.get(url, function(res){
+		window.systemInfo = res
+		if (Object.keys(window.systemInfo).length===0) {
+			window.systemInfo = {
+					exposeCategory:{
+						Advanture:{},
+						Fantasy:{},
+						ScienceFiction:{},
+						Romance:{},
+						Thriller:{},
+						Mystery:{}
+					}
+			}
+		}
+	})
+}
+
 window.saveStories = function() {
 	for (var i in window.getUser().storyMap) {
 		window.saveStory(window.getUser().storyMap[i])
@@ -59,6 +80,15 @@ window.saveStory = function(story) {
 			fileName:story.id+".txt",
 			filePath:window.storyPath+window.getUser().user,
 			content:story
+	}
+	window.post( window.homeUrl+"/save", data);
+	
+}
+window.saveSystemInfo = function(story) {
+	var data = {
+			fileName:"SystemInfo.txt",
+			filePath:"./db/dn",
+			content:window.systemInfo
 	}
 	window.post( window.homeUrl+"/save", data);
 	
@@ -157,15 +187,24 @@ window.exposeParagraph = function(e, level) {
 	e.preventDefault();
 	if (level===undefined) {
 		window.confirmBox("Are you sure to this paragraph unexpose?", "Warning", function() {
-			window.getStory().expose = level 
-			window.getEntity().expose = level
+			var ee = window.getEntity()
+			delete window.systemInfo.exposeCategory[ee.exposeCategory][ee.id]
+			//TODOL how to update story level expose? //window.getStory().expose = level 
+			ee.expose = level
 			window.app.refresh()
 		})
 		return
 	}
-	window.getStory().expose = level 
-	window.getEntity().expose = level
-	window.app.refresh()
+	window.app.showDialog(<ExposeParagraphView ref={(node)=>{window.app.references.ExposeParagraphView = node}} />, {title:"Define a Category for Expose Point", hideX:true, top:"10px", width:"600px", height:"200px", handleOK:function() {
+		window.getStory().expose = level 
+		var ee = window.getEntity()
+		ee.expose = level
+		ee.exposeCategory = window.app.references.ExposeParagraphView.categorySelect.value
+		window.systemInfo.exposeCategory[ee.exposeCategory][ee.id] = {userId:window.curUserId, storyId:window.curStoryId, entityId:window.curEntityId}
+		window.app.refresh()
+	
+	}})
+	
 }
 window.linkParagraph = function(e, fromContextMenu) {
 	e.preventDefault();
@@ -321,8 +360,8 @@ window.openEditParagraphDlg = function(e, id) {
 		entity.name = window.app.titleInput.value
 		entity.content1 = window.app.contentTextarea1.value
 		entity.content2 = window.app.contentTextarea2.value
-		window.saveStory()
-		window.location.reload()
+		//window.saveStory()
+		//window.location.reload()
 	}})
 }
 
@@ -446,8 +485,10 @@ class App extends Component {
   componentDidMount() {
 	  window.initServer(function() {
 		  window.post( window.homeUrl+"/create", {filePath:"./db/dn", fileName:"users.txt", "content":{}}, function() {
-			  window.loadUsers()
-			  
+			  window.post( window.homeUrl+"/create", {filePath:"./db/dn", fileName:"SystemInfo.txt", "content":{}}, function() {
+				  window.loadSystemInfo()
+				  window.loadUsers()
+			  })
 		  })
 	  })
 	  

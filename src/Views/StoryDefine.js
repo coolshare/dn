@@ -31,7 +31,7 @@ export default class StoryDefine extends Component {
 	render() {
 		var self = this
 		return (
-			<div  style={{height:"100%", display:"flex", justifyContent:"center",backgroundImage: `url(${bg})`}}>
+			<div  style={{height:"100%", display:"flex", justifyContent:"center"}}>
 				<div style={{display:"flex", justifyContent:"center", flexDirection:"column"}}>
 			    	<h3>Welcome to Story Builder</h3>
 			    	<h5>Please define your story</h5>

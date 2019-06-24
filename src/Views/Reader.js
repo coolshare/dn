@@ -17,7 +17,8 @@ export default class Reader extends Component {
         
     }
 	componentDidMount(){
-
+    	this.userId = window.curUserId
+    	this.storyId = window.curStoryId
 	}
 	handleMouseMove(e) {
 		var x = e.clientX
@@ -41,7 +42,7 @@ export default class Reader extends Component {
 	handleClick(e) {
 		var x = e.clientX
 		if (x>window.innerWidth/2+100) {
-			if (window.pages[window.pages.length-1].linksTo===undefined && this.state.selected  === window.pages.length || this.state.selected  === window.pages.length+1) {
+			if (!this.isNextAvailable()) {
 				return
 			}
 			this.next.call(this)
@@ -66,9 +67,17 @@ export default class Reader extends Component {
     next() {
     	var self = this
     	var node = window.pages[this.state.selected-1]
+
     	if (this.state.selected>=window.pages.length) {
     		if (node.linksTo===undefined) {
-        		return
+        		if (node.externalLinkEntryPoint!==undefined) {
+        			var nn = node
+        			node = window.getEntity(node.externalLinkEntryPoint.entityId, node.externalLinkEntryPoint.storyId, node.externalLinkEntryPoint.userId)
+        			this.userId = nn.externalLinkEntryPoint.userId
+        	    	this.storyId = nn.externalLinkEntryPoint.storyId
+        		} else {
+        			return
+        		}
         	}
         	var index = 0
         	if (node.linksTo.length>1) {
@@ -96,7 +105,7 @@ export default class Reader extends Component {
         			index = Math.floor(Math.random()*node.linksTo.length)
         		}
         	} 
-    		var n = window.getEntity(node.linksTo[index].target)
+    		var n = window.getEntity(node.linksTo[index].target, this.storyId, this.userId)
     		window.pages.push(n)
     	}
     	
@@ -106,9 +115,14 @@ export default class Reader extends Component {
         }))
     }
 
+    isNextAvailable() {
+    	var nn = window.pages[window.pages.length-1]
+	    return nn.linksTo!==undefined || this.state.selected  < window.pages.length || nn.externalLinkEntryPoint
+    }
     
 	render() {
 		var self = this
+		
 		return <div style={{"height":"500px", "width":"1000px", paddingTop:"10px", paddingBottom:"10px"}} onClick={(e)=>{this.handleClick(e)}} onMouseMove={(e)=>{this.handleMouseMove(e)}}>
 				<button style={{margin:"10px"}}
 			        onClick={(e)=>{window.app.switchView("MainView")}}
@@ -119,7 +133,7 @@ export default class Reader extends Component {
 			    	>Previous</button>
 			    <button
 			        onClick={this.next}
-			        disabled={window.pages[window.pages.length-1].linksTo===undefined && this.state.selected  === window.pages.length || this.state.selected  === window.pages.length+1}
+			        disabled={!this.isNextAvailable()}
 			    	>Next</button>
     		<FlippingPages
 			        className="App-pages"
@@ -149,7 +163,7 @@ export default class Reader extends Component {
 			    >Previous</button>
 			    <button 
 			        onClick={this.next}
-			        disabled={window.pages[window.pages.length-1].linksTo===undefined && this.state.selected  === window.pages.length || this.state.selected  === window.pages.length+1}
+			        disabled={!this.isNextAvailable()}
 			    >Next</button>
 		</div>
 	}
