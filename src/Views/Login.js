@@ -46,7 +46,11 @@ export default class Login extends Component {
 	enableButton() {
 		this.RegisterButton.disabled = this.password.value.trim().length<1
 	}
-    
+	handleKeyDown(e) {
+		if (e.which===13) {
+			this.handleLogin()
+		}
+	}
 	render() {
 		var self = this
 		return (
@@ -56,7 +60,7 @@ export default class Login extends Component {
 			    	<h5>Login</h5>
 			    	<div >												
 						 <div><input style={{margin:"7px"}} ref={(node)=>{this.userName=node}} placeholder="User Name"/></div>
-						 <div><input style={{margin:"7px"}} ref={(node)=>{this.password=node}} type="password" placeholder="Password"/></div>
+						 <div><input style={{margin:"7px"}} ref={(node)=>{this.password=node}} onKeyUp={e=>this.handleKeyDown(e)} type="password" placeholder="Password"/></div>
 						 <div><button style={{margin:"7px"}} ref={(node)=>{this.RegisterButton=node}} onClick={e=>{this.handleLogin()}}>Login</button><a href="javascript:void(0)" onClick={e=>{this.handleSignUp()}}>Sign up</a></div>
 				   </div>
 			

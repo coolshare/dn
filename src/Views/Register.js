@@ -30,7 +30,11 @@ export default class Register extends Component {
 	enableButton() {
 		this.RegisterButton.disabled = this.password.value.trim().length<1
 	}
-    
+	handleKeyDown(e) {
+		if (e.which===13) {
+			this.handleRegister()
+		}
+	}
 	render() {
 		var self = this
 		return (
@@ -41,8 +45,11 @@ export default class Register extends Component {
 			    	<div >												
 						 <div><input style={{margin:"7px"}} ref={(node)=>{this.userName=node}} placeholder="User Name"/></div>
 						 <div><input style={{margin:"7px"}} ref={(node)=>{this.password=node}} onChange={e=>{this.enableButton()}} type="password" placeholder="Password"/></div>
-						 <div><input style={{margin:"7px"}} ref={(node)=>{this.password2=node}} type="password" placeholder="Retype Password"/></div>
-						 <div><button style={{margin:"7px"}} ref={(node)=>{this.RegisterButton=node}} onClick={e=>{this.handleRegister()}} >Register</button></div>
+						 <div><input style={{margin:"7px"}} ref={(node)=>{this.password2=node}} onKeyUp={e=>this.handleKeyDown(e)} type="password" placeholder="Retype Password"/></div>
+						 <div>
+						 	<button style={{margin:"7px"}} ref={(node)=>{this.RegisterButton=node}} onClick={e=>{this.handleRegister()}} >Register</button>
+						 	<button style={{margin:"7px"}} ref={(node)=>{this.RegisterButton=node}} onClick={e=>{window.app.switchView("Login")}} >Cancel</button>
+						 </div>
 				   </div>
 				</div>
 			</div>

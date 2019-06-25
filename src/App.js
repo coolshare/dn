@@ -211,35 +211,36 @@ window.linkParagraph = function(e, fromContextMenu) {
 	window.app.showDialog(<LinkParagraphView ref={(node)=>{window.app.references.LinkParagraphView = node}} fromContextMenu={fromContextMenu}/>, {title:"Link Paragraph to Other Stories", hideX:true, top:"10px", width:"1100px", height:"560px", handleOK:function() {
 		var sId = window.app.references.LinkParagraphView.tarStory.value
 		var tarEnity = window.app.references.LinkParagraphView.tarEnity.value
-		if (sId===""||tarEnity==="") {
-			window.alertBox("Please at least select an entry point.", "Warning")
+		var exitEnity = window.app.references.LinkParagraphView.exitEnity.value
+		var returnEntity = window.app.references.LinkParagraphView.returnEntity.value
+		if (sId===""||tarEnity===""||exitEnity===""||returnEntity==="") {
+			window.alertBox("Please finish all the fields.", "Warning")
 			return true
 		}
 		var sss = sId.split(".")
 		window.getEntity().externalLinkEntryPoint = {userId:sss[0], storyId:sss[1], entityId:tarEnity}
-		window.getEntity().externalLinkExitPoint = {userId:sss[0], storyId:sss[1], entityId:window.app.references.LinkParagraphView.exitEnity.value}
-	
+		window.getEntity().externalLinkExitPoint = {userId:sss[0], storyId:sss[1], entityId:exitEnity}
+		window.getEntity().externalLinkReturnPoint  = {userId:sss[0], storyId:sss[1], entityId:returnEntity}
+		
 	}})
 }
-window.findFromEntityId = function(entity, sId, targetId) {
-	if(entity.linksTo) {
-		for (var j=0; j<entity.linksTo.length; j++) {
-			var id = entity.linksTo[j].target
-			if(id===targetId) {
-				return  entity.id
-			}
-			var ee = window.getEntity(id, sId)
-			if (ee.linksTo) {
-				var rr = window.findFromEntityId(ee, sId, targetId)
-				if (rr) {
-					return rr
-				}
+window.findFromEntityId = function(targetId, storyId) {
+	var mm = storyId===undefined?window.entityMap:window.getStory(storyId).entityMap
+	for (var e in mm){
+		var entity = window.entityMap[e]
+		if (entity.linksTo) {
+			for (var j=0; j<entity.linksTo.length; j++) {
+				var id = entity.linksTo[j].target
+				if(id===targetId) {
+					return  entity.id
+				}				
 			}
 		}
+		
 	}
 	
 }
-window.findReachableEntities = function(entity, storyId, userId, res, skip) {
+window.findReachableEntities = function(entity, res, skip) {
 	if (skip!=true) {
 		res.push(entity)
 	} 
@@ -247,8 +248,8 @@ window.findReachableEntities = function(entity, storyId, userId, res, skip) {
 	if (entity.linksTo) {
 		for (var i=0; i<entity.linksTo.length; i++) {
 			var id = entity.linksTo[i].target
-			var ee = window.getEntity(id, storyId, userId)
-			res = window.findReachableEntities(ee, storyId, userId, res)
+			var ee = window.getEntity(id)
+			res = window.findReachableEntities(ee, res)
 		}
 	}
 	
@@ -277,21 +278,39 @@ window.loadStories = function(response) {
 	var url = window.homeUrl+"/dir?filePath=./db/dn/stories/"+window.getUser().user
 	window.get(url, function(res){
 		window.getUser().storyMap = res
-		if (response) {
-			response(res)
-		}
-	})
-	url = window.homeUrl+"/dir?filePath=./db/dn/stories/&fieldName=expose&fieldValue=1&fieldValueType=int"
-	window.get(url, function(res){
-		var uu = window.getUser()
-		for (var u in res) {
-			if (u===uu.user) {
-				continue
+		url = window.homeUrl+"/dir?filePath=./db/dn/stories/&fieldName=expose&fieldValue=1&fieldValueType=int"
+		window.get(url, function(res){
+			var uu = window.getUser()
+			for (var u in res) {
+				if (u===uu.user) {
+					continue
+				}
+				window.userMap[u].storyMap = res[u]
 			}
-			window.userMap[u].storyMap = res[u]
-		}
+			var mm = {}
+			var ss = {}
+			for (var u in window.userMap) {
+				var user = window.userMap[u]
+				for (var s in user.storyMap) {
+					var story = user.storyMap[s]
+					ss[story.id] = story
+					for (var e in story.entityMap) {
+						var entity = story.entityMap[e]
+						mm[entity.id] = entity
+					}
+				}
+			}
+			window.entityMap = mm
+			window.storyMap = ss
+			
+			if (response) {
+				response(res)
+			}
+		})
 		
 	})
+	
+	
 }
 
 window.popupBranchingLogic = function() {
@@ -369,13 +388,9 @@ window.openEditParagraphDlg = function(e, id) {
 
 
 /// Story
-window.getStory = function(sId, uId) {
+window.getStory = function(sId) {
 	sId = sId||window.curStoryId
-	uId = uId||window.curUserId
-	var u = window.getUser(uId)
-	if (u) {
-		return u.storyMap[sId]
-	}
+	return window.storyMap[sId]
 	
 }
 
@@ -394,17 +409,9 @@ window.removeStory = function(id) {
 
 
 /// Entity
-window.getEntity = function(eId, sId, uId) {
+window.getEntity = function(eId) {
 	eId = eId||window.curEntityId
-	sId = sId||window.curStoryId
-	uId = uId||window.curUserId
-	var u = window.getUser(uId)
-	if (u) {
-		var s = u.storyMap[sId]
-		if (s) {
-			return s.entityMap[eId]
-		}
-	}
+	return window.entityMap[eId]
 	
 }
 
@@ -415,6 +422,7 @@ window.setCurEnity = function(id) {
 window.addEnity = function(e) {
 	var s = window.getStory()
 	s.entityMap[e.id] = e
+	window.entityMap[s.id] = e 
 }
 
 window.removeEnity = function(e, id) {

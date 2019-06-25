@@ -50,6 +50,7 @@ class CustomDiagram extends React.PureComponent {
 	    		res[item.id] = item 
 	    	}
 	    	window.getStory().entityMap = res
+	    	window.entityMap = Object.assign(window.entityMap, res)
 	      console.info(entityState)
 	    });
 	//})

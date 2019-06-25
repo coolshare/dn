@@ -21,10 +21,11 @@ export default class StoryDefine extends Component {
 			return
 		}
 		
-		var firstSection = {"id":"_start_","type":"Paragraph","width":90,"height":60,"x":95,"y":94,"name":"Start Point"}
+		var firstSection = {"id":"_start_"+new Date().valueOf(),"type":"Paragraph","width":90,"height":60,"x":95,"y":94,"name":"Start Point"}
 		res.entityMap[firstSection.id] = firstSection
 		res.id = "ID"+new Date().valueOf()
 		window.setCurStory(firstSection.id)
+		window.storyMap[res.id] = res
 		window.addStory(res)
 		window.app.refresh()
 	}

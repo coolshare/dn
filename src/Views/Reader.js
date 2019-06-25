@@ -68,15 +68,24 @@ export default class Reader extends Component {
     	var self = this
     	var node = window.pages[this.state.selected-1]
 
-    	if (this.state.selected>=window.pages.length) {
+    	//once in external path
+    	if (this.entryPoint && this.entryPoint.externalLinkExitPoint && node.id===this.entryPoint.externalLinkExitPoint.entityId) {
+    		var n = window.getEntity(this.entryPoint.externalLinkReturnPoint.entityId)
+        	window.pages.push(n)
+    	} else if (this.state.selected>=window.pages.length) {
     		if (node.linksTo===undefined) {
         		if (node.externalLinkEntryPoint!==undefined) {
         			var nn = node
-        			node = window.getEntity(node.externalLinkEntryPoint.entityId, node.externalLinkEntryPoint.storyId, node.externalLinkEntryPoint.userId)
-        			this.userId = nn.externalLinkEntryPoint.userId
-        	    	this.storyId = nn.externalLinkEntryPoint.storyId
+        			this.entryPoint = node
+        			node = window.getEntity(node.externalLinkEntryPoint.entityId)
         		} else {
-        			return
+        			if (node.externalLinkExitPoint!==undefined) {
+            			var nn = node
+            			node = window.getEntity(node.externalLinkExitPoint.entityId)
+            		} else {
+            			return
+            		}
+        			
         		}
         	}
         	var index = 0
@@ -105,7 +114,7 @@ export default class Reader extends Component {
         			index = Math.floor(Math.random()*node.linksTo.length)
         		}
         	} 
-    		var n = window.getEntity(node.linksTo[index].target, this.storyId, this.userId)
+    		var n = window.getEntity(node.linksTo[index].target)
     		window.pages.push(n)
     	}
     	
@@ -117,7 +126,7 @@ export default class Reader extends Component {
 
     isNextAvailable() {
     	var nn = window.pages[window.pages.length-1]
-	    return nn.linksTo!==undefined || this.state.selected  < window.pages.length || nn.externalLinkEntryPoint
+	    return nn.linksTo!==undefined || this.state.selected  < window.pages.length || nn.externalLinkEntryPoint|| nn.externalLinkExitPoint
     }
     
 	render() {
